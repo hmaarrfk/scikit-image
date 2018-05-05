@@ -26,7 +26,8 @@ _supported_types = (np.bool_, np.bool8,
                     np.float16, np.float32, np.float64)
 
 
-def check_precision_loss(dtypeobj_in, dtypeobj_out, output_warning=False):
+def check_precision_loss(dtypeobj_in, dtypeobj_out,
+                         output_warning=False, int_same_size_lossy=False):
     """Check if conversion between images will incur loss of precision.
 
     Generally speaking, the output object needs to have more significant bits
@@ -45,6 +46,9 @@ def check_precision_loss(dtypeobj_in, dtypeobj_out, output_warning=False):
     output_warning: bool, optional
         Outputs a warning using `warn` if operation will incur loss of
         precision.
+    int_same_size_ok: bool, optional
+        Should conversion between integers of the same same (and signedness)
+        be considered lossy.
 
     """
     kind_in = dtypeobj_in.kind
@@ -71,6 +75,8 @@ def check_precision_loss(dtypeobj_in, dtypeobj_out, output_warning=False):
             (kind_in == 'u' and kind_out == 'u')):
         # signed/unsigned to same kind
         if itemsize_out < itemsize_in:
+            has_loss = True
+        elif int_same_size_lossy and itemsize_out == itemsize_in:
             has_loss = True
     elif kind_in == 'u' and kind_out == 'i':
         # usigned -> signed int

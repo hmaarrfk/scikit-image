@@ -179,3 +179,6 @@ def test_check_precision_loss():
     for (dtype_in, dtype_out, expected_value) in dtype_pairs_conversion:
         assert check_precision_loss(
             dtype_in, dtype_out, output_warning=False) == expected_value
+
+    assert check_precision_loss(dtype.uint8, dtype.uint8,
+                                output_warning=False, int_same_size_lossy=True)
