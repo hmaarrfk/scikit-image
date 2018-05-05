@@ -1907,6 +1907,19 @@ def bayer2rgb_naive(raw_image: np.array, bayer_pattern=['rg', 'gb'],
     K_red_or_blue = 1 / 4 * np.array([[1, 2, 1],
                             [2, 4, 2],
                             [1, 2, 1]], dtype='float32')
+
+
+    Follows the discussion in
+    Color Image and Video Enhancement
+    Celebi, M.E, Leccca M: Smolka B, 2015
+
+    Chapter 2: Image Demosaicing
+    Ruiwen Zhen and Robert L. Stevenson
+
+    Note that they mention that this technique introduces artifacts
+    and they don't recommend it ;).
+    They mention a simple method is a 5x5 kernel too. Will try that after
+    this speeds up a little bit.
     Parameters
     ==========
     raw_image: np.array [N, M]
