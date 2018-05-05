@@ -1885,3 +1885,263 @@ def ydbdr2rgb(ydbdr):
     """
     arr = ydbdr.copy()
     return _convert(rgb_from_ydbdr, arr)
+
+
+def bayer2rgb_naive(raw_image: np.array, bayer_pattern=['rg', 'gb'],
+                    dtype_out: np.dtype=None, output: np.ndarray=None):
+    """Converts an raw image obtained from a sensor with bayer filter to color.
+
+    Converts the from raw data obtained from the sensor with bayer filter
+    to one that has an extra dimension to describe RGB colors.
+
+    It does so by:
+        1. Expands the NxM image to NxMx3 image.
+        2. Assigning the values of the red green and blue pixels by the ones
+           measured by the sensor.
+        3. Convolves the color images with the following kernels to fill in the
+           missing values.
+
+    K_green = 1 / 4 * np.array([[0, 1, 0],
+                           [1, 4, 1],
+                           [0, 1, 0]], dtype='float32')
+    K_red_or_blue = 1 / 4 * np.array([[1, 2, 1],
+                            [2, 4, 2],
+                            [1, 2, 1]], dtype='float32')
+    Parameters
+    ==========
+    raw_image: np.array [N, M]
+        N and M must be multiples of 2. This contains the raw data as measured
+        from the sensor.
+    bayer_pattern: {['rg', 'gb'],
+                    ['gr', 'bg'],
+                    ['bg', 'gr'],
+                    ['gb', 'rg']}
+        The bayer pattern that corresponds to the given array.
+    dtype_out: np.dtype (optional)
+        Output image type. If the output image has more precision than the
+        input image, then it is used during the computation. Otherwise, the
+        computation is done using the input image type and the result is
+        converted to the output image type.
+
+        Where permitted, inputs are first scaled down to avoid overflow errors.
+    output: ndimage, optional
+        Output image type. dtype_out is derived from this if provided
+
+    """
+
+    """
+    This performs horribly
+
+    import numpy as np
+    from skimage.color.colorconv import bayer2rgb_naive, bayer2rgb
+    a = np.random.rand(2432, 4320)
+    b = a.astype(dtype='float32')
+    c = (a * 255).astype('uint8')
+    print('float64')
+    %timeit bayer2rgb_naive(a)
+    %timeit bayer2rgb(a)
+    print('float32')
+    %timeit bayer2rgb_naive(b)
+    %timeit bayer2rgb(b)
+    print('uint8')
+    %timeit bayer2rgb_naive(c)
+    %timeit bayer2rgb(c)
+
+    float64
+    353 ms ± 7.79 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    296 ms ± 1.52 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    float32
+    367 ms ± 7.92 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    155 ms ± 1.49 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    uint8
+    622 ms ± 7.07 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    188 ms ± 2.47 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    """
+    from scipy.ndimage import convolve
+    from ..util.dtype import convert
+
+    if output is not None:
+        output[...] = 0
+        dtype_out = output.dtype
+    else:
+        if dtype_out is None:
+            dtype_out = raw_image.dtype
+        output = np.zeros((*raw_image.shape, 3), dtype=dtype_out)
+
+    K_green = np.array([[0, 1, 0],
+                        [1, 4, 1],
+                        [0, 1, 0]], dtype=dtype_out)
+    K_red_or_blue = np.array([[1, 2, 1],
+                              [2, 4, 2],
+                              [1, 2, 1]], dtype=dtype_out)
+
+    if 'r' == bayer_pattern[0][0]:
+        output[0::2, 0::2, 0] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
+    elif 'r' == bayer_pattern[0][1]:
+        output[0::2, 1::2, 0] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
+    elif 'r' == bayer_pattern[1][0]:
+        output[1::2, 0::2, 0] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
+    else:  # 'r' == bayer_patter[1][1]:
+        output[1::2, 1::2, 0] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+
+    if 'g' == bayer_pattern[0][0]:
+        output[0::2, 0::2, 1] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
+        output[1::2, 1::2, 1] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+    else:  # 'g' == bayer_pattern[0][1]:
+        output[0::2, 1::2, 1] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
+        output[1::2, 0::2, 1] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
+
+    if 'r' == bayer_pattern[0][0]:
+        output[0::2, 0::2, 2] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
+    elif 'r' == bayer_pattern[0][1]:
+        output[0::2, 1::2, 2] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
+    elif 'r' == bayer_pattern[1][0]:
+        output[1::2, 0::2, 2] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
+    else:  # 'r' == bayer_patter[1][1]:
+        output[1::2, 1::2, 2] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+
+    if dtype_out.kind == 'f':
+        K_green /= 4
+        K_red_or_blue /= 4
+    else:
+        output //= 4
+
+    convolve(output[:, :, 0], K_red_or_blue, output=output[:, :, 0])
+    convolve(output[:, :, 1], K_green, output=output[:, :, 0])
+    convolve(output[:, :, 2], K_red_or_blue, output=output[:, :, 0])
+
+    return output
+
+
+def bayer2rgb(raw_image: np.array, bayer_pattern=['rg', 'gb'],
+              dtype_out: np.dtype=None):
+    """The implementation has been unrolled to improve speed.
+    If anybody knows a fast, more readible implemenetation,
+    please change this unrolled one.
+
+    It works about
+    50% as fast for float32
+    10% faster for float64
+    60% faster uint8
+
+    See _bayer2rgb_naive for unrolled implemementation
+    """
+    from ..util.dtype import convert
+
+    if ''.join(bayer_pattern) not in {'rggb', 'grbg', 'bggr', 'gbrg'}:
+        raise ValueError('Unknown bayer_patter')
+
+    if ''.join(bayer_pattern) in {'grbg', 'bggr', 'gbrg'}:
+        raise NotImplementedError('Not yet implemented')
+
+    if len(raw_image.shape) != 2:
+        raise ValueError("Image must be a 2D image.")
+    if raw_image.shape[0] % 2 != 0 or raw_image.shape[1] % 2 != 0:
+        raise ValueError("Image must have an even number of rows and columns")
+
+    if dtype_out is None:
+        dtype_out = raw_image.dtype
+    else:
+        dtype_out = np.dtype(dtype_out)
+
+    try:
+        from skimage.util.dtype import check_precision_loss
+    except ImportError:
+        def check_precision_loss(*args, **kwargs):
+            pass
+    check_precision_loss(raw_image.dtype, dtype_out,
+                         output_warning=True,
+                         int_same_size_lossy=True)
+
+    # Allocate a C continuous array
+    color_image = np.zeros((*raw_image.shape, 3), dtype=dtype_out)
+
+    if dtype_out.kind == 'f':
+        def divide_by_2(array):
+            return array * np.array(0.5, dtype=dtype_out)
+
+        def add_divide_by_2(array1, array2):
+            return (array1 + array2) * np.array(0.5, dtype=dtype_out)
+
+        def add_divide_by_4(array1, array2):
+            return (array1 + array2) * np.array(0.25, dtype=dtype_out)
+
+    else:
+        def divide_by_2(array):
+            return array // 2
+
+        def add_divide_by_2(array1, array2):
+            return array1 // 2 + array2 // 2
+
+        def add_divide_by_4(array1, array2):
+            return add_divide_by_2(array1, array2) // 2
+
+    # Create convenient views
+    # These views have for their first two indicies the pixels "mega pixels"
+    # that contain something like
+    # rg
+    # gb
+    # The last two indicies are the index of the subpixel within it
+    red_image = color_image[:, :, 0]
+    red_image.shape = (red_image.shape[0] // 2, 2, red_image.shape[1] // 2, 2)
+    red_image = np.swapaxes(red_image, 1, 2)
+
+    green_image = color_image[:, :, 1]
+    green_image.shape = (
+        raw_image.shape[0] // 2, 2, raw_image.shape[1] // 2, 2)
+    green_image = np.swapaxes(green_image, 1, 2)
+
+    blue_image = color_image[:, :, 2]
+    blue_image.shape = (raw_image.shape[0] // 2, 2, raw_image.shape[1] // 2, 2)
+    blue_image = np.swapaxes(blue_image, 1, 2)
+
+    # TODO: allow convert to take in the "output" image
+    #       this helps for large arrays, but maybe for small arrays too
+    # convert(raw_image[0::2, 0::2], output=red_image[:, :, 0, 0])
+    # convert(raw_image[1::2, 1::2], output=blue_image[:, :, 1, 1])
+    # convert(raw_image[0::2, 1::2], output=green_image[:, :, 0, 1])
+    # convert(raw_image[1::2, 0::2], output=green_image[:, :, 1, 0])
+    red_image[:, :, 0, 0] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
+    green_image[:, :, 1, 0] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
+    green_image[:, :, 0, 1] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
+    blue_image[:, :, 1, 1] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+
+    # Compute this one first, because if the array is C continuous, this
+    # Each line here is on the same cache line
+    # Adjacent pixels
+    red_image[:, :-1, 0, 1] = \
+        add_divide_by_2(red_image[:, :-1, 0, 0], red_image[:, 1:, 0, 0])
+    red_image[:, -1, 0, 1] = red_image[:, -1, 0, 0]
+
+    # This actually takes care of the "corner" pixel because
+    # The values around that one pixel have now been filled in
+    red_image[:-1, :, 1, :] = \
+        add_divide_by_2(red_image[:-1, :, 0, :], red_image[1:, :, 0, :])
+    red_image[-1, :, 1, :] = red_image[-1, :, 0, :]
+
+    blue_image[:, 1:, 1, 0] = \
+        add_divide_by_2(blue_image[:, :-1, 1, 1], blue_image[:, 1:, 1, 1])
+    blue_image[:, 0, 1, 0] = blue_image[:, 0, 1, 1]
+    blue_image[1:, :, 0, :] = \
+        add_divide_by_2(blue_image[:-1, :, 1, :], blue_image[1:, :, 1, :])
+    blue_image[0, :, 0, :] = blue_image[0, :, 1, :]
+
+    # Compute the convolution horizontally
+    green_image[:, 1:, 0, 0] = \
+        add_divide_by_4(green_image[:, :-1, 0, 1], green_image[:, 1:, 0, 1])
+    green_image[:, 0, 0, 0] = divide_by_2(green_image[:, 0, 0, 1])
+
+    green_image[:, -1, 1, 1] = divide_by_2(green_image[:, -1, 1, 0])
+    green_image[:, :-1, 1, 1] = \
+        add_divide_by_4(green_image[:, :-1, 1, 0], green_image[:, 1:, 1, 0])
+
+    # Now compute it vertically
+    green_image[1:, :, 0, 0] += \
+        add_divide_by_4(green_image[1:, :, 1, 0], green_image[:-1, :, 1, 0])
+    green_image[0, :, 0, 0] += divide_by_2(green_image[0, :, 1, 0])
+
+    green_image[:-1, :, 1, 1] += \
+        add_divide_by_4(green_image[:-1, :, 0, 1], green_image[:-1, :, 0, 1])
+    green_image[-1, :, 1, 1] += divide_by_2(green_image[-1, :, 0, 1])
+
+    return color_image
