@@ -117,6 +117,7 @@ def test_bool():
         converted8 = func(img8)
         assert np.sum(converted8) == dtype_range[dt][1]
 
+
 def test_check_precision_loss():
     dtype_pairs_conversion = [(np.uint8, np.uint8, False),
                               (np.uint8, np.int8, True),
