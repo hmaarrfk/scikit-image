@@ -1885,8 +1885,8 @@ def ydbdr2rgb(ydbdr):
     return _convert(rgb_from_ydbdr, arr)
 
 
-def bayer2rgb_naive(raw_image: np.array, bayer_pattern=['rg', 'gb'],
-                    dtype_out: np.dtype=None, output: np.ndarray=None):
+def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
+                    output=None):
     """Converts an raw image obtained from a sensor with bayer filter to color.
 
     Converts the from raw data obtained from the sensor with bayer filter
@@ -1928,7 +1928,7 @@ def bayer2rgb_naive(raw_image: np.array, bayer_pattern=['rg', 'gb'],
                     ['bg', 'gr'],
                     ['gb', 'rg']}
         The bayer pattern that corresponds to the given array.
-    dtype_out: np.dtype (optional)
+    dtype: np.dtype (optional)
         Output image type. If the output image has more precision than the
         input image, then it is used during the computation. Otherwise, the
         computation is done using the input image type and the result is
@@ -1936,7 +1936,7 @@ def bayer2rgb_naive(raw_image: np.array, bayer_pattern=['rg', 'gb'],
 
         Where permitted, inputs are first scaled down to avoid overflow errors.
     output: ndimage, optional
-        Output image type. dtype_out is derived from this if provided
+        Output image type. dtype is derived from this if provided
 
     """
 
@@ -1973,45 +1973,45 @@ def bayer2rgb_naive(raw_image: np.array, bayer_pattern=['rg', 'gb'],
 
     if output is not None:
         output[...] = 0
-        dtype_out = output.dtype
+        dtype = output.dtype
     else:
-        if dtype_out is None:
-            dtype_out = raw_image.dtype
-        output = np.zeros((*raw_image.shape, 3), dtype=dtype_out)
+        if dtype is None:
+            dtype = raw_image.dtype
+        output = np.zeros((*raw_image.shape, 3), dtype=dtype)
 
     K_green = np.array([[0, 1, 0],
                         [1, 4, 1],
-                        [0, 1, 0]], dtype=dtype_out)
+                        [0, 1, 0]], dtype=dtype)
     K_red_or_blue = np.array([[1, 2, 1],
                               [2, 4, 2],
-                              [1, 2, 1]], dtype=dtype_out)
+                              [1, 2, 1]], dtype=dtype)
 
     if 'r' == bayer_pattern[0][0]:
-        output[0::2, 0::2, 0] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
+        output[0::2, 0::2, 0] = convert(raw_image[0::2, 0::2], dtype=dtype)
     elif 'r' == bayer_pattern[0][1]:
-        output[0::2, 1::2, 0] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
+        output[0::2, 1::2, 0] = convert(raw_image[0::2, 1::2], dtype=dtype)
     elif 'r' == bayer_pattern[1][0]:
-        output[1::2, 0::2, 0] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
+        output[1::2, 0::2, 0] = convert(raw_image[1::2, 0::2], dtype=dtype)
     else:  # 'r' == bayer_patter[1][1]:
-        output[1::2, 1::2, 0] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+        output[1::2, 1::2, 0] = convert(raw_image[1::2, 1::2], dtype=dtype)
 
     if 'g' == bayer_pattern[0][0]:
-        output[0::2, 0::2, 1] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
-        output[1::2, 1::2, 1] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+        output[0::2, 0::2, 1] = convert(raw_image[0::2, 0::2], dtype=dtype)
+        output[1::2, 1::2, 1] = convert(raw_image[1::2, 1::2], dtype=dtype)
     else:  # 'g' == bayer_pattern[0][1]:
-        output[0::2, 1::2, 1] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
-        output[1::2, 0::2, 1] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
+        output[0::2, 1::2, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
+        output[1::2, 0::2, 1] = convert(raw_image[1::2, 0::2], dtype=dtype)
 
     if 'r' == bayer_pattern[0][0]:
-        output[0::2, 0::2, 2] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
+        output[0::2, 0::2, 2] = convert(raw_image[0::2, 0::2], dtype=dtype)
     elif 'r' == bayer_pattern[0][1]:
-        output[0::2, 1::2, 2] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
+        output[0::2, 1::2, 2] = convert(raw_image[0::2, 1::2], dtype=dtype)
     elif 'r' == bayer_pattern[1][0]:
-        output[1::2, 0::2, 2] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
+        output[1::2, 0::2, 2] = convert(raw_image[1::2, 0::2], dtype=dtype)
     else:  # 'r' == bayer_patter[1][1]:
-        output[1::2, 1::2, 2] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+        output[1::2, 1::2, 2] = convert(raw_image[1::2, 1::2], dtype=dtype)
 
-    if dtype_out.kind == 'f':
+    if dtype.kind == 'f':
         K_green /= 4
         K_red_or_blue /= 4
     else:
@@ -2024,8 +2024,7 @@ def bayer2rgb_naive(raw_image: np.array, bayer_pattern=['rg', 'gb'],
     return output
 
 
-def bayer2rgb(raw_image: np.array, bayer_pattern=['rg', 'gb'],
-              dtype_out: np.dtype=None):
+def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     """The implementation has been unrolled to improve speed.
     If anybody knows a fast, more readible implemenetation,
     please change this unrolled one.
@@ -2050,32 +2049,32 @@ def bayer2rgb(raw_image: np.array, bayer_pattern=['rg', 'gb'],
     if raw_image.shape[0] % 2 != 0 or raw_image.shape[1] % 2 != 0:
         raise ValueError("Image must have an even number of rows and columns")
 
-    if dtype_out is None:
-        dtype_out = raw_image.dtype
+    if dtype is None:
+        dtype = raw_image.dtype
     else:
-        dtype_out = np.dtype(dtype_out)
+        dtype = np.dtype(dtype)
 
     try:
         from skimage.util.dtype import check_precision_loss
     except ImportError:
         def check_precision_loss(*args, **kwargs):
             pass
-    check_precision_loss(raw_image.dtype, dtype_out,
+    check_precision_loss(raw_image.dtype, dtype,
                          output_warning=True,
                          int_same_size_lossy=True)
 
     # Allocate a C continuous array
-    color_image = np.zeros((*raw_image.shape, 3), dtype=dtype_out)
+    color_image = np.zeros((*raw_image.shape, 3), dtype=dtype)
 
-    if dtype_out.kind == 'f':
+    if dtype.kind == 'f':
         def divide_by_2(array):
-            return array * np.array(0.5, dtype=dtype_out)
+            return array * np.array(0.5, dtype=dtype)
 
         def add_divide_by_2(array1, array2):
-            return (array1 + array2) * np.array(0.5, dtype=dtype_out)
+            return (array1 + array2) * np.array(0.5, dtype=dtype)
 
         def add_divide_by_4(array1, array2):
-            return (array1 + array2) * np.array(0.25, dtype=dtype_out)
+            return (array1 + array2) * np.array(0.25, dtype=dtype)
 
     else:
         def divide_by_2(array):
@@ -2112,10 +2111,10 @@ def bayer2rgb(raw_image: np.array, bayer_pattern=['rg', 'gb'],
     # convert(raw_image[1::2, 1::2], output=blue_image[:, :, 1, 1])
     # convert(raw_image[0::2, 1::2], output=green_image[:, :, 0, 1])
     # convert(raw_image[1::2, 0::2], output=green_image[:, :, 1, 0])
-    red_image[:, :, 0, 0] = convert(raw_image[0::2, 0::2], dtype=dtype_out)
-    green_image[:, :, 1, 0] = convert(raw_image[1::2, 0::2], dtype=dtype_out)
-    green_image[:, :, 0, 1] = convert(raw_image[0::2, 1::2], dtype=dtype_out)
-    blue_image[:, :, 1, 1] = convert(raw_image[1::2, 1::2], dtype=dtype_out)
+    red_image[:, :, 0, 0] = convert(raw_image[0::2, 0::2], dtype=dtype)
+    green_image[:, :, 1, 0] = convert(raw_image[1::2, 0::2], dtype=dtype)
+    green_image[:, :, 0, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
+    blue_image[:, :, 1, 1] = convert(raw_image[1::2, 1::2], dtype=dtype)
 
     # Compute this one first, because if the array is C continuous, this
     # Each line here is on the same cache line
