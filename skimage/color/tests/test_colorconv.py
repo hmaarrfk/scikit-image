@@ -572,8 +572,8 @@ def test_bayer2rgb():
         assert_almost_equal(expected_color_image, color_image)
 
     # gbrg
-    expected_color_image[:, :, 2] = bayer_image[0, 1]
-    expected_color_image[:, :, 0] = bayer_image[1, 0]
+    expected_color_image[..., 2], expected_color_image[..., 0] = \
+        expected_color_image[..., 0].copy(), expected_color_image[..., 2].copy()  # noqa
     for b2rgb in bayer2rgb_funcs:
         color_image = b2rgb(bayer_image, 'gbrg')
         assert_almost_equal(expected_color_image, color_image)
@@ -590,9 +590,56 @@ def test_bayer2rgb():
         assert_almost_equal(expected_color_image, color_image)
 
     # bggr
-    expected_color_image[:, :, 2] = bayer_image[0, 0]
-    expected_color_image[:, :, 0] = bayer_image[1, 1]
+    expected_color_image[..., 2], expected_color_image[..., 0] = \
+        expected_color_image[..., 0].copy(), expected_color_image[..., 2].copy()  # noqa
 
+    for b2rgb in bayer2rgb_funcs:
+        color_image = b2rgb(bayer_image, 'bggr')
+        assert_almost_equal(expected_color_image, color_image)
+
+    bayer_image = np.reshape(np.arange(16, dtype='float32'), (4, 4)) / 16
+
+    # This is a 4x4 image sensor.
+    # it tests for all cases I think. middle points, and edge points with 2
+    # neighbors.
+
+    # rggb
+    expected_color_image = np.zeros((4, 4, 3), dtype=bayer_image.dtype)
+    expected_color_image[0::2, 0::2, 0] = bayer_image[0::2, 0::2]
+    expected_color_image[1::2, 0::2, 1] = bayer_image[1::2, 0::2]
+    expected_color_image[0::2, 1::2, 1] = bayer_image[0::2, 1::2]
+    expected_color_image[1::2, 1::2, 2] = bayer_image[1::2, 1::2]
+
+    red = expected_color_image[..., 0]
+    green = expected_color_image[..., 1]
+    blue = expected_color_image[..., 2]
+
+    red[(0, 2), 1] = (red[(0, 2), 0] + red[(0, 2), 2]) / 2
+    red[(0, 2), 3] = red[(0, 2), 2]
+    red[1, :] = (red[0, :] + red[2, :]) / 2
+    red[3, :] = red[2, :]
+
+    blue[(1, 3), 2] = (blue[(1, 3), 1] + blue[(1, 3), 3]) / 2
+    blue[(1, 3), 0] = blue[(1, 3), 1]
+    blue[2, :] = (blue[1, :] + blue[3, :]) / 2
+    blue[0, :] = blue[1, :]
+
+    green[0, 0] = (green[0, 1] + green[1, 0]) / 2
+    green[-1, -1] = (green[-1, -2] + green[-2, -1]) / 2
+    green[0, 2] = green[0, 1] * 0.25 + green[0, 3] * 0.25 + green[1, 2] * 0.5
+    green[2, 0] = green[1, 0] * 0.25 + green[3, 0] * 0.25 + green[2, 1] * 0.5
+    green[-1, 1] = green[-1, 0] * 0.25 + green[-1, 2] * 0.25 + green[-2, 1] * 0.5  # noqa
+    green[1, -1] = green[0, -1] * 0.25 + green[2, -1] * 0.25 + green[1, -2] * 0.5  # noqa
+
+    green[1, 1] = (green[0, 1] + green[1, 0] + green[2, 1] + green[1, 2]) / 4
+    green[2, 2] = (green[1, 2] + green[2, 1] + green[3, 2] + green[2, 3]) / 4
+
+    for b2rgb in bayer2rgb_funcs:
+        color_image = b2rgb(bayer_image, 'rggb')
+        assert_almost_equal(expected_color_image, color_image)
+
+    # bggr
+    red[...], blue[...] = blue.copy(), red.copy()
     for b2rgb in bayer2rgb_funcs:
         color_image = b2rgb(bayer_image, 'bggr')
         assert_almost_equal(expected_color_image, color_image)
