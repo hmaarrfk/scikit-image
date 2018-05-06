@@ -52,6 +52,7 @@ from skimage import data_dir
 from skimage._shared._warnings import expected_warnings
 from skimage._shared import testing
 import colorsys
+import warnings
 
 
 def test_guess_spatial_dimensions():
@@ -559,8 +560,14 @@ def test_bayer2rgb():
     def test_debayer(bayer_image, expected, pattern):
         for b2rgb in bayer_functions:
             for dtype in ['float64', 'float32', 'uint16', 'uint8', 'int16', 'uint8']:  # noqa
-                b = convert(bayer_image, dtype=dtype)
-                e = convert(expected, dtype=dtype)
+                if dtype != 'float64':
+                    with expected_warnings(['precision loss']):
+                        b = convert(bayer_image, dtype=dtype)
+                    with expected_warnings(['precision loss']):
+                        e = convert(expected, dtype=dtype)
+                else:
+                    b = convert(bayer_image, dtype=dtype)
+                    e = convert(expected, dtype=dtype)
                 color_image = b2rgb(b, pattern)
                 if b.dtype.kind == 'f':
                     assert_almost_equal(e, color_image)
@@ -575,7 +582,7 @@ def test_bayer2rgb():
             with raises(ValueError):
                 b2rgb(bayer_image)
 
-    bayer_image = np.array([[1, 0.5], [0.25, 0.33]], dtype='float32')
+    bayer_image = np.array([[1, 0.5], [0.25, 0.33]], dtype=float)
 
     # Bogus pattern
     for b2rgb in bayer_functions:
