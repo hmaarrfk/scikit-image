@@ -1984,6 +1984,7 @@ def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
 
     return output
 
+
 def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     """Converts an raw image obtained from a sensor with bayer filter to color.
 
@@ -2192,7 +2193,6 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
 
         g[1:, :, 0, 1] += add_divide_by_4(g[1:, :, 1, 1], g[:-1, :, 1, 1])
         g[:-1, :, 1, 0] += add_divide_by_4(g[:-1, :, 0, 0], g[1:, :, 0, 0])
-
 
     if bayer_pattern[0] == 'r':
         infill_red_or_blue_00(red_image)
