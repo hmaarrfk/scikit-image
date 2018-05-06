@@ -16,8 +16,8 @@ import os.path
 
 import numpy as np
 from skimage._shared.testing import assert_equal, assert_almost_equal
-from skimage._shared.testing import assert_array_almost_equal,
-from skimage._shared.testing import assert_allclose
+from skimage._shared.testing import assert_array_almost_equal
+from skimage._shared.testing import raises, assert_allclose
 from skimage._shared.testing import TestCase
 
 from skimage import img_as_float, img_as_ubyte
@@ -554,8 +554,9 @@ def test_gray2rgb_alpha():
 
 
 def test_bayer2rgb():
+    bayer_functions = [bayer2rgb, bayer2rgb_naive]
     def test_debayer(bayer_image, expected, pattern):
-        for b2rgb in [bayer2rgb, bayer2rgb_naive]:
+        for b2rgb in bayer_functions:
             for dtype in ['float64', 'float32', 'uint16', 'uint8', 'int16', 'uint8']:  # noqa
                 b = convert(bayer_image, dtype=dtype)
                 e = convert(expected, dtype=dtype)
@@ -567,7 +568,21 @@ def test_bayer2rgb():
                     # much as 4???
                     assert_allclose(e, color_image, atol=4)
 
+    # image of odd shape
+    for bayer_image in [np.zeros((4, 3)), np.zeros((3, 4)), np.zeros((3, 3))]:
+        for b2rgb in bayer_functions:
+            with raises(ValueError):
+                b2rgb(bayer_image)
+
+
     bayer_image = np.array([[1, 0.5], [0.25, 0.33]], dtype='float32')
+
+    # Bogus pattern
+    for b2rgb in bayer_functions:
+        with raises(ValueError):
+            b2rgb(bayer_image, 'gggg')
+        with raises(ValueError):
+            b2rgb(bayer_image, ['gg', 'gg'])
 
     # edge case 2x2 pixel containing only "one" super pixel
     # grbg

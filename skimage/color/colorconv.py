@@ -1928,6 +1928,11 @@ def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
     if bayer_pattern not in {'rggb', 'grbg', 'bggr', 'gbrg'}:
         raise ValueError('Unknown bayer_pattern')
 
+    if len(raw_image.shape) != 2:
+        raise ValueError("Image must be a 2D image.")
+    if raw_image.shape[0] % 2 != 0 or raw_image.shape[1] % 2 != 0:
+        raise ValueError("Image must have an even number of rows and columns")
+
     if output is not None:
         output[...] = 0
         dtype = output.dtype
