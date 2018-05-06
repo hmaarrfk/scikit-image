@@ -555,6 +555,7 @@ def test_gray2rgb_alpha():
 
 def test_bayer2rgb():
     bayer_functions = [bayer2rgb, bayer2rgb_naive]
+
     def test_debayer(bayer_image, expected, pattern):
         for b2rgb in bayer_functions:
             for dtype in ['float64', 'float32', 'uint16', 'uint8', 'int16', 'uint8']:  # noqa
@@ -573,7 +574,6 @@ def test_bayer2rgb():
         for b2rgb in bayer_functions:
             with raises(ValueError):
                 b2rgb(bayer_image)
-
 
     bayer_image = np.array([[1, 0.5], [0.25, 0.33]], dtype='float32')
 
@@ -616,7 +616,7 @@ def test_bayer2rgb():
 
     test_debayer(bayer_image, expected_color_image, 'bggr')
 
-    bayer_image = np.reshape(np.arange(1, 16+1, dtype='float32'), (4, 4)) / 16
+    bayer_image = np.reshape(np.arange(1, 16 + 1, dtype=float), (4, 4)) / 16
 
     # This is a 4x4 image sensor.
     # it tests for all cases I think. middle points, and edge points with 2
