@@ -40,7 +40,12 @@ from skimage.color import (rgb2hsv, hsv2rgb,
                            rgb2ycbcr, ycbcr2rgb,
                            rgb2ydbdr, ydbdr2rgb,
                            rgba2rgb,
+                           bayer2rgb,
                            guess_spatial_dimensions)
+
+# Internal function used to test mathematical behavior
+# Easy implementation, but slow
+from skimage.color.colorconv import bayer2rgb_naive
 
 from skimage import data_dir
 from skimage._shared._warnings import expected_warnings
@@ -545,3 +550,49 @@ def test_gray2rgb_alpha():
                           alpha=True)[0, 0, 3], 1)
     assert_equal(gray2rgb(np.array([[1, 2], [3, 4]], dtype=np.uint8),
                           alpha=True)[0, 0, 3], 255)
+
+
+def test_bayer2rgb():
+    bayer_image = np.array([[1, 0.5], [0.25, 0.33]], dtype='float32')
+
+    bayer2rgb_funcs = [bayer2rgb, bayer2rgb_naive]
+
+    # edge case 2x2 pixel containing only "one" super pixel
+    # grbg
+    expected_color_image = np.empty(
+        (*bayer_image.shape, 3), dtype=bayer_image.dtype)
+    expected_color_image[:, :, 0] = bayer_image[0, 1]
+    expected_color_image[:, :, 2] = bayer_image[1, 0]
+    expected_color_image[:, :, 1] = (bayer_image[0, 0] + bayer_image[1, 1]) / 2
+    expected_color_image[0, 0, 1] = bayer_image[0, 0]
+    expected_color_image[1, 1, 1] = bayer_image[1, 1]
+
+    for b2rgb in bayer2rgb_funcs:
+        color_image = b2rgb(bayer_image, 'grbg')
+        assert_almost_equal(expected_color_image, color_image)
+
+    # gbrg
+    expected_color_image[:, :, 2] = bayer_image[0, 1]
+    expected_color_image[:, :, 0] = bayer_image[1, 0]
+    for b2rgb in bayer2rgb_funcs:
+        color_image = b2rgb(bayer_image, 'gbrg')
+        assert_almost_equal(expected_color_image, color_image)
+
+    # rggb
+    expected_color_image[:, :, 0] = bayer_image[0, 0]
+    expected_color_image[:, :, 2] = bayer_image[1, 1]
+    expected_color_image[:, :, 1] = (bayer_image[0, 1] + bayer_image[1, 0]) / 2
+    expected_color_image[0, 1, 1] = bayer_image[0, 1]
+    expected_color_image[1, 0, 1] = bayer_image[1, 0]
+
+    for b2rgb in bayer2rgb_funcs:
+        color_image = b2rgb(bayer_image, 'rggb')
+        assert_almost_equal(expected_color_image, color_image)
+
+    # bggr
+    expected_color_image[:, :, 2] = bayer_image[0, 0]
+    expected_color_image[:, :, 0] = bayer_image[1, 1]
+
+    for b2rgb in bayer2rgb_funcs:
+        color_image = b2rgb(bayer_image, 'bggr')
+        assert_almost_equal(expected_color_image, color_image)

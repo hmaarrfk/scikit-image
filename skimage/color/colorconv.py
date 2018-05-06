@@ -1959,24 +1959,28 @@ def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
         output[0::2, 1::2, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
         output[1::2, 0::2, 1] = convert(raw_image[1::2, 0::2], dtype=dtype)
 
-    if 'r' == bayer_pattern[0]:
+    if 'b' == bayer_pattern[0]:
         output[0::2, 0::2, 2] = convert(raw_image[0::2, 0::2], dtype=dtype)
-    elif 'r' == bayer_pattern[1]:
+    elif 'b' == bayer_pattern[1]:
         output[0::2, 1::2, 2] = convert(raw_image[0::2, 1::2], dtype=dtype)
-    elif 'r' == bayer_pattern[2]:
+    elif 'b' == bayer_pattern[2]:
         output[1::2, 0::2, 2] = convert(raw_image[1::2, 0::2], dtype=dtype)
-    else:  # 'r' == bayer_patter[3]:
+    else:  # 'b' == bayer_patter[3]:
         output[1::2, 1::2, 2] = convert(raw_image[1::2, 1::2], dtype=dtype)
 
     if dtype.kind == 'f':
+        # Predivide the small array
         K_green /= 4
         K_red_or_blue /= 4
     else:
+        # Can't divide K, would get 0, so remove significant bits from output
         output //= 4
 
-    convolve(output[:, :, 0], K_red_or_blue, output=output[:, :, 0])
-    convolve(output[:, :, 1], K_green, output=output[:, :, 0])
-    convolve(output[:, :, 2], K_red_or_blue, output=output[:, :, 0])
+    # do not use the output parameter of convolve.
+    # It assumes the input and output arrays are different.
+    output[:, :, 0] = convolve(output[:, :, 0], K_red_or_blue, mode='mirror')
+    output[:, :, 1] = convolve(output[:, :, 1], K_green, mode='mirror')
+    output[:, :, 2] = convolve(output[:, :, 2], K_red_or_blue, mode='mirror')
 
     return output
 
@@ -2193,7 +2197,6 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     if bayer_pattern[0] == 'r':
         infill_red_or_blue_00(red_image)
     elif bayer_pattern[1] == 'r':
-        print('got here')
         infill_red_or_blue_01(red_image)
     elif bayer_pattern[2] == 'r':
         infill_red_or_blue_10(red_image)
