@@ -2174,7 +2174,7 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
         g[1:, :, 0, 0] += add_divide_by_4(g[1:, :, 1, 0], g[:-1, :, 1, 0])
         g[0, :, 0, 0] += divide_by_2(g[0, :, 1, 0])
 
-        g[:-1, :, 1, 1] += add_divide_by_4(g[:-1, :, 0, 1], g[:-1, :, 0, 1])
+        g[:-1, :, 1, 1] += add_divide_by_4(g[:-1, :, 0, 1], g[1:, :, 0, 1])
         g[-1, :, 1, 1] += divide_by_2(g[-1, :, 0, 1])
 
     def infill_green_00(g):
