@@ -1887,6 +1887,98 @@ def ydbdr2rgb(ydbdr):
 
 def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
                     output=None):
+    """
+    This performs horribly
+
+    import numpy as np
+    from skimage.color.colorconv import bayer2rgb_naive, bayer2rgb
+    a = np.random.rand(2432, 4320)
+    b = a.astype(dtype='float32')
+    c = (a * 255).astype('uint8')
+    print('float64')
+    %timeit bayer2rgb_naive(a)
+    %timeit bayer2rgb(a)
+    print('float32')
+    %timeit bayer2rgb_naive(b)
+    %timeit bayer2rgb(b)
+    print('uint8')
+    %timeit bayer2rgb_naive(c)
+    %timeit bayer2rgb(c)
+
+    float64
+    353 ms ± 7.79 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    296 ms ± 1.52 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    float32
+    367 ms ± 7.92 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    155 ms ± 1.49 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    uint8
+    622 ms ± 7.07 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    188 ms ± 2.47 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    """
+
+    bayer2rgb_naive.__doc__ += bayer2rgb.__doc__
+
+    from scipy.ndimage import convolve
+    from ..util.dtype import convert
+
+    if not isinstance(bayer_pattern, str):
+        bayer_pattern = ''.join(bayer_pattern)
+    if bayer_pattern not in {'rggb', 'grbg', 'bggr', 'gbrg'}:
+        raise ValueError('Unknown bayer_pattern')
+
+    if output is not None:
+        output[...] = 0
+        dtype = output.dtype
+    else:
+        if dtype is None:
+            dtype = raw_image.dtype
+        output = np.zeros((*raw_image.shape, 3), dtype=dtype)
+
+    K_green = np.array([[0, 1, 0],
+                        [1, 4, 1],
+                        [0, 1, 0]], dtype=dtype)
+    K_red_or_blue = np.array([[1, 2, 1],
+                              [2, 4, 2],
+                              [1, 2, 1]], dtype=dtype)
+
+    if 'r' == bayer_pattern[0]:
+        output[0::2, 0::2, 0] = convert(raw_image[0::2, 0::2], dtype=dtype)
+    elif 'r' == bayer_pattern[1]:
+        output[0::2, 1::2, 0] = convert(raw_image[0::2, 1::2], dtype=dtype)
+    elif 'r' == bayer_pattern[2]:
+        output[1::2, 0::2, 0] = convert(raw_image[1::2, 0::2], dtype=dtype)
+    else:  # 'r' == bayer_patter[2]:
+        output[1::2, 1::2, 0] = convert(raw_image[1::2, 1::2], dtype=dtype)
+
+    if 'g' == bayer_pattern[0]:
+        output[0::2, 0::2, 1] = convert(raw_image[0::2, 0::2], dtype=dtype)
+        output[1::2, 1::2, 1] = convert(raw_image[1::2, 1::2], dtype=dtype)
+    else:  # 'g' == bayer_pattern[1]:
+        output[0::2, 1::2, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
+        output[1::2, 0::2, 1] = convert(raw_image[1::2, 0::2], dtype=dtype)
+
+    if 'r' == bayer_pattern[0]:
+        output[0::2, 0::2, 2] = convert(raw_image[0::2, 0::2], dtype=dtype)
+    elif 'r' == bayer_pattern[1]:
+        output[0::2, 1::2, 2] = convert(raw_image[0::2, 1::2], dtype=dtype)
+    elif 'r' == bayer_pattern[2]:
+        output[1::2, 0::2, 2] = convert(raw_image[1::2, 0::2], dtype=dtype)
+    else:  # 'r' == bayer_patter[3]:
+        output[1::2, 1::2, 2] = convert(raw_image[1::2, 1::2], dtype=dtype)
+
+    if dtype.kind == 'f':
+        K_green /= 4
+        K_red_or_blue /= 4
+    else:
+        output //= 4
+
+    convolve(output[:, :, 0], K_red_or_blue, output=output[:, :, 0])
+    convolve(output[:, :, 1], K_green, output=output[:, :, 0])
+    convolve(output[:, :, 2], K_red_or_blue, output=output[:, :, 0])
+
+    return output
+
+def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     """Converts an raw image obtained from a sensor with bayer filter to color.
 
     Converts the from raw data obtained from the sensor with bayer filter
@@ -1940,91 +2032,6 @@ def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
 
     """
 
-    """
-    This performs horribly
-
-    import numpy as np
-    from skimage.color.colorconv import bayer2rgb_naive, bayer2rgb
-    a = np.random.rand(2432, 4320)
-    b = a.astype(dtype='float32')
-    c = (a * 255).astype('uint8')
-    print('float64')
-    %timeit bayer2rgb_naive(a)
-    %timeit bayer2rgb(a)
-    print('float32')
-    %timeit bayer2rgb_naive(b)
-    %timeit bayer2rgb(b)
-    print('uint8')
-    %timeit bayer2rgb_naive(c)
-    %timeit bayer2rgb(c)
-
-    float64
-    353 ms ± 7.79 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-    296 ms ± 1.52 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-    float32
-    367 ms ± 7.92 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-    155 ms ± 1.49 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-    uint8
-    622 ms ± 7.07 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-    188 ms ± 2.47 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-    """
-    from scipy.ndimage import convolve
-    from ..util.dtype import convert
-
-    if output is not None:
-        output[...] = 0
-        dtype = output.dtype
-    else:
-        if dtype is None:
-            dtype = raw_image.dtype
-        output = np.zeros((*raw_image.shape, 3), dtype=dtype)
-
-    K_green = np.array([[0, 1, 0],
-                        [1, 4, 1],
-                        [0, 1, 0]], dtype=dtype)
-    K_red_or_blue = np.array([[1, 2, 1],
-                              [2, 4, 2],
-                              [1, 2, 1]], dtype=dtype)
-
-    if 'r' == bayer_pattern[0][0]:
-        output[0::2, 0::2, 0] = convert(raw_image[0::2, 0::2], dtype=dtype)
-    elif 'r' == bayer_pattern[0][1]:
-        output[0::2, 1::2, 0] = convert(raw_image[0::2, 1::2], dtype=dtype)
-    elif 'r' == bayer_pattern[1][0]:
-        output[1::2, 0::2, 0] = convert(raw_image[1::2, 0::2], dtype=dtype)
-    else:  # 'r' == bayer_patter[1][1]:
-        output[1::2, 1::2, 0] = convert(raw_image[1::2, 1::2], dtype=dtype)
-
-    if 'g' == bayer_pattern[0][0]:
-        output[0::2, 0::2, 1] = convert(raw_image[0::2, 0::2], dtype=dtype)
-        output[1::2, 1::2, 1] = convert(raw_image[1::2, 1::2], dtype=dtype)
-    else:  # 'g' == bayer_pattern[0][1]:
-        output[0::2, 1::2, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
-        output[1::2, 0::2, 1] = convert(raw_image[1::2, 0::2], dtype=dtype)
-
-    if 'r' == bayer_pattern[0][0]:
-        output[0::2, 0::2, 2] = convert(raw_image[0::2, 0::2], dtype=dtype)
-    elif 'r' == bayer_pattern[0][1]:
-        output[0::2, 1::2, 2] = convert(raw_image[0::2, 1::2], dtype=dtype)
-    elif 'r' == bayer_pattern[1][0]:
-        output[1::2, 0::2, 2] = convert(raw_image[1::2, 0::2], dtype=dtype)
-    else:  # 'r' == bayer_patter[1][1]:
-        output[1::2, 1::2, 2] = convert(raw_image[1::2, 1::2], dtype=dtype)
-
-    if dtype.kind == 'f':
-        K_green /= 4
-        K_red_or_blue /= 4
-    else:
-        output //= 4
-
-    convolve(output[:, :, 0], K_red_or_blue, output=output[:, :, 0])
-    convolve(output[:, :, 1], K_green, output=output[:, :, 0])
-    convolve(output[:, :, 2], K_red_or_blue, output=output[:, :, 0])
-
-    return output
-
-
-def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     """The implementation has been unrolled to improve speed.
     If anybody knows a fast, more readible implemenetation,
     please change this unrolled one.
@@ -2038,11 +2045,10 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     """
     from ..util.dtype import convert
 
-    if ''.join(bayer_pattern) not in {'rggb', 'grbg', 'bggr', 'gbrg'}:
+    if not isinstance(bayer_pattern, str):
+        bayer_pattern = ''.join(bayer_pattern)
+    if bayer_pattern not in {'rggb', 'grbg', 'bggr', 'gbrg'}:
         raise ValueError('Unknown bayer_patter')
-
-    if ''.join(bayer_pattern) in {'grbg', 'bggr', 'gbrg'}:
-        raise NotImplementedError('Not yet implemented')
 
     if len(raw_image.shape) != 2:
         raise ValueError("Image must be a 2D image.")
@@ -2066,6 +2072,9 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     # Allocate a C continuous array
     color_image = np.zeros((*raw_image.shape, 3), dtype=dtype)
 
+    # These functions are defined so as to allow floating pointers to use
+    # True divide, while allowing integer types to floor divide and then
+    # add avoiding overflow errors
     if dtype.kind == 'f':
         def divide_by_2(array):
             return array * np.array(0.5, dtype=dtype)
@@ -2111,47 +2120,96 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     # convert(raw_image[1::2, 1::2], output=blue_image[:, :, 1, 1])
     # convert(raw_image[0::2, 1::2], output=green_image[:, :, 0, 1])
     # convert(raw_image[1::2, 0::2], output=green_image[:, :, 1, 0])
-    red_image[:, :, 0, 0] = convert(raw_image[0::2, 0::2], dtype=dtype)
-    green_image[:, :, 1, 0] = convert(raw_image[1::2, 0::2], dtype=dtype)
-    green_image[:, :, 0, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
-    blue_image[:, :, 1, 1] = convert(raw_image[1::2, 1::2], dtype=dtype)
 
-    # Compute this one first, because if the array is C continuous, this
-    # Each line here is on the same cache line
-    # Adjacent pixels
-    red_image[:, :-1, 0, 1] = \
-        add_divide_by_2(red_image[:, :-1, 0, 0], red_image[:, 1:, 0, 0])
-    red_image[:, -1, 0, 1] = red_image[:, -1, 0, 0]
+    def infill_red_or_blue_00(rb):
+        rb[:, :, 0, 0] = convert(raw_image[0::2, 0::2], dtype=dtype)
+        # Compute this one first, because if the array is C continuous, this
+        # Each line here is on the same cache line
+        # Adjacent pixels
+        rb[:, :-1, 0, 1] = add_divide_by_2(rb[:, :-1, 0, 0], rb[:, 1:, 0, 0])
+        rb[:, -1, 0, 1] = rb[:, -1, 0, 0]
 
-    # This actually takes care of the "corner" pixel because
-    # The values around that one pixel have now been filled in
-    red_image[:-1, :, 1, :] = \
-        add_divide_by_2(red_image[:-1, :, 0, :], red_image[1:, :, 0, :])
-    red_image[-1, :, 1, :] = red_image[-1, :, 0, :]
+        # This actually takes care of the "corner" pixel because
+        # The values around that one pixel have now been filled in
+        rb[:-1, :, 1, :] = add_divide_by_2(rb[:-1, :, 0, :], rb[1:, :, 0, :])
+        rb[-1, :, 1, :] = rb[-1, :, 0, :]
 
-    blue_image[:, 1:, 1, 0] = \
-        add_divide_by_2(blue_image[:, :-1, 1, 1], blue_image[:, 1:, 1, 1])
-    blue_image[:, 0, 1, 0] = blue_image[:, 0, 1, 1]
-    blue_image[1:, :, 0, :] = \
-        add_divide_by_2(blue_image[:-1, :, 1, :], blue_image[1:, :, 1, :])
-    blue_image[0, :, 0, :] = blue_image[0, :, 1, :]
+    def infill_red_or_blue_01(rb):
+        rb[:, :, 0, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
+        rb[:, 1:, 0, 0] = add_divide_by_2(rb[:, 1:, 0, 1], rb[:, :-1, 0, 1])
+        rb[:, 0, 0, 0] = rb[:, 0, 0, 1]
+        rb[:-1, :, 1, :] = add_divide_by_2(rb[:-1, :, 0, :], rb[1:, :, 0, :])
+        rb[-1, :, 1, :] = rb[-1, :, 0, :]
 
-    # Compute the convolution horizontally
-    green_image[:, 1:, 0, 0] = \
-        add_divide_by_4(green_image[:, :-1, 0, 1], green_image[:, 1:, 0, 1])
-    green_image[:, 0, 0, 0] = divide_by_2(green_image[:, 0, 0, 1])
+    def infill_red_or_blue_10(rb):
+        rb[:, :, 1, 0] = convert(raw_image[1::2, 0::2], dtype=dtype)
+        rb[:, :-1, 1, 1] = add_divide_by_2(rb[:, :-1, 1, 0], rb[:, 1:, 1, 0])
+        rb[:, -1, 1, 1] = rb[:, -1, 1, 0]
+        rb[1:, :, 0, :] = add_divide_by_2(rb[1:, :, 1, :], rb[:-1, :, 1, :])
+        rb[0, :, 0, :] = rb[0, :, 1, :]
 
-    green_image[:, -1, 1, 1] = divide_by_2(green_image[:, -1, 1, 0])
-    green_image[:, :-1, 1, 1] = \
-        add_divide_by_4(green_image[:, :-1, 1, 0], green_image[:, 1:, 1, 0])
+    def infill_red_or_blue_11(rb):
+        rb[:, :, 1, 1] = convert(raw_image[1::2, 1::2], dtype=dtype)
+        rb[:, 1:, 1, 0] = add_divide_by_2(rb[:, :-1, 1, 1], rb[:, 1:, 1, 1])
+        rb[:, 0, 1, 0] = rb[:, 0, 1, 1]
+        rb[1:, :, 0, :] = add_divide_by_2(rb[:-1, :, 1, :], rb[1:, :, 1, :])
+        rb[0, :, 0, :] = rb[0, :, 1, :]
 
-    # Now compute it vertically
-    green_image[1:, :, 0, 0] += \
-        add_divide_by_4(green_image[1:, :, 1, 0], green_image[:-1, :, 1, 0])
-    green_image[0, :, 0, 0] += divide_by_2(green_image[0, :, 1, 0])
+    def infill_green_01(g):
+        g[:, :, 1, 0] = convert(raw_image[1::2, 0::2], dtype=dtype)
+        g[:, :, 0, 1] = convert(raw_image[0::2, 1::2], dtype=dtype)
+        # Compute the convolution horizontally
+        g[:, 1:, 0, 0] = add_divide_by_4(g[:, :-1, 0, 1], g[:, 1:, 0, 1])
+        g[:, 0, 0, 0] = divide_by_2(g[:, 0, 0, 1])
 
-    green_image[:-1, :, 1, 1] += \
-        add_divide_by_4(green_image[:-1, :, 0, 1], green_image[:-1, :, 0, 1])
-    green_image[-1, :, 1, 1] += divide_by_2(green_image[-1, :, 0, 1])
+        g[:, -1, 1, 1] = divide_by_2(g[:, -1, 1, 0])
+        g[:, :-1, 1, 1] = add_divide_by_4(g[:, :-1, 1, 0], g[:, 1:, 1, 0])
+
+        # Now compute it vertically
+        g[1:, :, 0, 0] += add_divide_by_4(g[1:, :, 1, 0], g[:-1, :, 1, 0])
+        g[0, :, 0, 0] += divide_by_2(g[0, :, 1, 0])
+
+        g[:-1, :, 1, 1] += add_divide_by_4(g[:-1, :, 0, 1], g[:-1, :, 0, 1])
+        g[-1, :, 1, 1] += divide_by_2(g[-1, :, 0, 1])
+
+    def infill_green_00(g):
+        g[:, :, 0, 0] = convert(raw_image[0::2, 0::2], dtype=dtype)
+        g[:, :, 1, 1] = convert(raw_image[1::2, 1::2], dtype=dtype)
+        g[:, 1:, 1, 0] = add_divide_by_4(g[:, :-1, 1, 1], g[:, 1:, 1, 1])
+        g[:, 0, 1, 0] = divide_by_2(g[:, 0, 1, 1])
+
+        g[:, -1, 0, 1] = divide_by_2(g[:, -1, 0, 0])
+        g[:, :-1, 0, 1] = add_divide_by_4(g[:, :-1, 0, 0], g[:, 1:, 0, 0])
+
+        g[0, :, 0, 1] += divide_by_2(g[0, :, 1, 1])
+        g[-1, :, 1, 0] += divide_by_2(g[-1, :, 0, 0])
+
+        g[1:, :, 0, 1] += add_divide_by_4(g[1:, :, 1, 1], g[:-1, :, 1, 1])
+        g[:-1, :, 1, 0] += add_divide_by_4(g[:-1, :, 0, 0], g[1:, :, 0, 0])
+
+
+    if bayer_pattern[0] == 'r':
+        infill_red_or_blue_00(red_image)
+    elif bayer_pattern[1] == 'r':
+        print('got here')
+        infill_red_or_blue_01(red_image)
+    elif bayer_pattern[2] == 'r':
+        infill_red_or_blue_10(red_image)
+    elif bayer_pattern[3] == 'r':
+        infill_red_or_blue_11(red_image)
+
+    if bayer_pattern[0] == 'b':
+        infill_red_or_blue_00(blue_image)
+    elif bayer_pattern[1] == 'b':
+        infill_red_or_blue_01(blue_image)
+    elif bayer_pattern[2] == 'b':
+        infill_red_or_blue_10(blue_image)
+    elif bayer_pattern[3] == 'b':
+        infill_red_or_blue_11(blue_image)
+
+    if bayer_pattern[0] == 'g':
+        infill_green_00(green_image)
+    elif bayer_pattern[1] == 'g':
+        infill_green_01(green_image)
 
     return color_image
