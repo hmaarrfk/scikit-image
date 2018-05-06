@@ -46,7 +46,7 @@ from skimage.color import (rgb2hsv, hsv2rgb,
 
 # Internal function used to test mathematical behavior
 # Easy implementation, but slow
-from skimage.color.colorconv import bayer2rgb_naive
+from skimage.color.colorconv import bayer2rgb_naive, bayer2rgb_redux
 from skimage.util.dtype import convert
 from skimage import data_dir
 from skimage._shared._warnings import expected_warnings
@@ -555,7 +555,7 @@ def test_gray2rgb_alpha():
 
 
 def test_bayer2rgb():
-    bayer_functions = [bayer2rgb, bayer2rgb_naive]
+    bayer_functions = [bayer2rgb, bayer2rgb_naive, bayer2rgb_redux]
 
     def test_debayer(bayer_image, expected, pattern):
         for b2rgb in bayer_functions:
@@ -570,11 +570,15 @@ def test_bayer2rgb():
                     e = convert(expected, dtype=dtype)
                 color_image = b2rgb(b, pattern)
                 if b.dtype.kind == 'f':
-                    assert_almost_equal(e, color_image)
+                    assert_almost_equal(e[..., 0], color_image[..., 0])
+                    assert_almost_equal(e[..., 1], color_image[..., 1])
+                    assert_almost_equal(e[..., 2], color_image[..., 2])
                 else:
                     # We divide by 4, therefore, we might be off by as
                     # much as 4???
-                    assert_allclose(e, color_image, atol=4)
+                    assert_allclose(e[..., 0], color_image[..., 0], atol=4)
+                    assert_allclose(e[..., 1], color_image[..., 1], atol=4)
+                    assert_allclose(e[..., 2], color_image[..., 2], atol=4)
 
     # image of odd shape
     for bayer_image in [np.zeros((4, 3)), np.zeros((3, 4)), np.zeros((3, 3))]:

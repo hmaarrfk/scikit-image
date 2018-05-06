@@ -2223,3 +2223,124 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
         infill_green_01(green_image)
 
     return color_image
+
+
+def bayer2rgb_redux(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
+    """This was an earlier, much cleaner implementation I had written.
+    I was having trouble with the ndfilter. With the testing suite being
+    corrrect now, it was easier to debug.
+    I think to have gotten it now.
+
+    I don't know which of the 3 is the fastest. Need to benchmark.
+
+    """
+    from ..util.dtype import convert
+    from scipy.ndimage import uniform_filter1d
+
+    if not isinstance(bayer_pattern, str):
+        bayer_pattern = ''.join(bayer_pattern)
+    if bayer_pattern not in {'rggb', 'grbg', 'bggr', 'gbrg'}:
+        raise ValueError('Unknown bayer_patter')
+
+    if len(raw_image.shape) != 2:
+        raise ValueError("Image must be a 2D image.")
+    if raw_image.shape[0] % 2 != 0 or raw_image.shape[1] % 2 != 0:
+        raise ValueError("Image must have an even number of rows and columns")
+
+    if dtype is None:
+        dtype = raw_image.dtype
+    else:
+        dtype = np.dtype(dtype)
+
+    try:
+        from skimage.util.dtype import check_precision_loss
+    except ImportError:
+        def check_precision_loss(*args, **kwargs):
+            pass
+    check_precision_loss(raw_image.dtype, dtype,
+                         output_warning=True,
+                         int_same_size_lossy=True)
+
+    # These functions are defined so as to allow floating pointers to use
+    # True divide, while allowing integer types to floor divide and then
+    # add avoiding overflow errors
+    if dtype.kind == 'f':
+        def add_divide_by_2(array1, array2):
+            return (array1 + array2) * np.array(0.5, dtype=dtype)
+    else:
+        def add_divide_by_2(array1, array2):
+            return array1 // 2 + array2 // 2
+
+    # Allocate a C continuous array
+    color_image = np.zeros((*raw_image.shape, 3), dtype=dtype)
+
+    red = color_image[:, :, 0]
+    green = color_image[:, :, 1]
+    blue = color_image[:, :, 2]
+
+    def infill_red_or_blue_00(rb):
+        rb[::2, ::2] = convert(raw_image[0::2, 0::2], dtype=dtype)
+        # Compute this one first, because if the array is C continuous, this
+        # Each line here is on the same cache line
+        # Adjacent pixels
+        uniform_filter1d(rb[::2, ::2], size=2, origin=-1, output=rb[::2, 1::2])  # noqa
+        uniform_filter1d(rb[::2, :],   size=2, axis=0, origin=-1, output=rb[1::2, :])  # noqa
+
+    def infill_red_or_blue_01(rb):
+        rb[0::2, 1::2] = convert(raw_image[0::2, 1::2], dtype=dtype)
+        uniform_filter1d(rb[::2, 1::2], size=2, origin=0, output=rb[::2, 0::2])  # noqa
+        uniform_filter1d(rb[::2, :], size=2, axis=0, origin=-1, output=rb[1::2, :])  # noqa
+
+    def infill_red_or_blue_10(rb):
+        rb[1::2, 0::2] = convert(raw_image[1::2, 0::2], dtype=dtype)
+        uniform_filter1d(rb[1::2, ::2], size=2, axis=1, origin=-1, output=rb[1::2, 1::2])  # noqa
+        uniform_filter1d(rb[1::2, :],   size=2, axis=0, origin=0, output=rb[::2, :])  # noqa
+
+    def infill_red_or_blue_11(rb):
+        rb[1::2, 1::2] = convert(raw_image[1::2, 1::2], dtype=dtype)
+        uniform_filter1d(rb[1::2, 1::2], size=2, axis=1, origin=0, output=rb[1::2, 0::2])  # noqa
+        uniform_filter1d(rb[1::2, :],    size=2, axis=0, origin=0, output=rb[::2, :])  # noqa
+
+    if bayer_pattern[0] == 'r':
+        infill_red_or_blue_00(red)
+    elif bayer_pattern[1] == 'r':
+        infill_red_or_blue_01(red)
+    elif bayer_pattern[2] == 'r':
+        infill_red_or_blue_10(red)
+    elif bayer_pattern[3] == 'r':
+        infill_red_or_blue_11(red)
+
+    if bayer_pattern[0] == 'b':
+        infill_red_or_blue_00(blue)
+    elif bayer_pattern[1] == 'b':
+        infill_red_or_blue_01(blue)
+    elif bayer_pattern[2] == 'b':
+        infill_red_or_blue_10(blue)
+    elif bayer_pattern[3] == 'b':
+        infill_red_or_blue_11(blue)
+
+
+    if bayer_pattern[0] == 'g':
+        green[::2, ::2] = convert(raw_image[0::2, 0::2], dtype=dtype)
+        green[1::2, 1::2] = convert(raw_image[1::2, 1::2], dtype=dtype)
+        g01_from_00 = uniform_filter1d(green[::2, ::2], size=2, axis=1, origin=-1)
+        g01_from_11 = uniform_filter1d(green[1::2, 1::2], size=2, axis=0, origin=0)
+
+        g10_from_00 = uniform_filter1d(green[::2, ::2], size=2, axis=0, origin=-1)
+        g10_from_11 = uniform_filter1d(green[1::2, 1::2], size=2, axis=1, origin=0)
+
+        green[::2, 1::2] = add_divide_by_2(g01_from_00, g01_from_11)
+        green[1::2, ::2] = add_divide_by_2(g10_from_00, g10_from_11)
+    elif bayer_pattern[1] == 'g':
+        green[1::2, ::2] = convert(raw_image[1::2, 0::2], dtype=dtype)
+        green[::2, 1::2] = convert(raw_image[0::2, 1::2], dtype=dtype)
+
+        g00_from_01 = uniform_filter1d(green[::2, 1::2], size=2, axis=1, origin=0)
+        g00_from_10 = uniform_filter1d(green[1::2, ::2], size=2, axis=0, origin=0)
+
+        g11_from_01 = uniform_filter1d(green[::2, 1::2], size=2, axis=0, origin=-1)
+        g11_from_10 = uniform_filter1d(green[1::2, ::2], size=2, axis=1, origin=-1)
+
+        green[0::2, 0::2] = add_divide_by_2(g00_from_10, g00_from_01)
+        green[1::2, 1::2] = add_divide_by_2(g11_from_10, g11_from_01)
+    return color_image
