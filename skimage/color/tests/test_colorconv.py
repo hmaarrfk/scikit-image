@@ -16,7 +16,8 @@ import os.path
 
 import numpy as np
 from skimage._shared.testing import assert_equal, assert_almost_equal
-from skimage._shared.testing import assert_array_almost_equal
+from skimage._shared.testing import assert_array_almost_equal,
+from skimage._shared.testing import assert_allclose
 from skimage._shared.testing import TestCase
 
 from skimage import img_as_float, img_as_ubyte
@@ -46,7 +47,7 @@ from skimage.color import (rgb2hsv, hsv2rgb,
 # Internal function used to test mathematical behavior
 # Easy implementation, but slow
 from skimage.color.colorconv import bayer2rgb_naive
-
+from skimage.util.dtype import convert
 from skimage import data_dir
 from skimage._shared._warnings import expected_warnings
 from skimage._shared import testing
@@ -553,9 +554,20 @@ def test_gray2rgb_alpha():
 
 
 def test_bayer2rgb():
-    bayer_image = np.array([[1, 0.5], [0.25, 0.33]], dtype='float32')
+    def test_debayer(bayer_image, expected, pattern):
+        for b2rgb in [bayer2rgb, bayer2rgb_naive]:
+            for dtype in ['float64', 'float32', 'uint16', 'uint8', 'int16', 'uint8']:  # noqa
+                b = convert(bayer_image, dtype=dtype)
+                e = convert(expected, dtype=dtype)
+                color_image = b2rgb(b, pattern)
+                if b.dtype.kind == 'f':
+                    assert_almost_equal(e, color_image)
+                else:
+                    # We divide by 4, therefore, we might be off by as
+                    # much as 4???
+                    assert_allclose(e, color_image, atol=4)
 
-    bayer2rgb_funcs = [bayer2rgb, bayer2rgb_naive]
+    bayer_image = np.array([[1, 0.5], [0.25, 0.33]], dtype='float32')
 
     # edge case 2x2 pixel containing only "one" super pixel
     # grbg
@@ -567,16 +579,12 @@ def test_bayer2rgb():
     expected_color_image[0, 0, 1] = bayer_image[0, 0]
     expected_color_image[1, 1, 1] = bayer_image[1, 1]
 
-    for b2rgb in bayer2rgb_funcs:
-        color_image = b2rgb(bayer_image, 'grbg')
-        assert_almost_equal(expected_color_image, color_image)
+    test_debayer(bayer_image, expected_color_image, 'grbg')
 
     # gbrg
     expected_color_image[..., 2], expected_color_image[..., 0] = \
         expected_color_image[..., 0].copy(), expected_color_image[..., 2].copy()  # noqa
-    for b2rgb in bayer2rgb_funcs:
-        color_image = b2rgb(bayer_image, 'gbrg')
-        assert_almost_equal(expected_color_image, color_image)
+    test_debayer(bayer_image, expected_color_image, 'gbrg')
 
     # rggb
     expected_color_image[:, :, 0] = bayer_image[0, 0]
@@ -585,19 +593,15 @@ def test_bayer2rgb():
     expected_color_image[0, 1, 1] = bayer_image[0, 1]
     expected_color_image[1, 0, 1] = bayer_image[1, 0]
 
-    for b2rgb in bayer2rgb_funcs:
-        color_image = b2rgb(bayer_image, 'rggb')
-        assert_almost_equal(expected_color_image, color_image)
+    test_debayer(bayer_image, expected_color_image, 'rggb')
 
     # bggr
     expected_color_image[..., 2], expected_color_image[..., 0] = \
         expected_color_image[..., 0].copy(), expected_color_image[..., 2].copy()  # noqa
 
-    for b2rgb in bayer2rgb_funcs:
-        color_image = b2rgb(bayer_image, 'bggr')
-        assert_almost_equal(expected_color_image, color_image)
+    test_debayer(bayer_image, expected_color_image, 'bggr')
 
-    bayer_image = np.reshape(np.arange(16, dtype='float32'), (4, 4)) / 16
+    bayer_image = np.reshape(np.arange(1, 16+1, dtype='float32'), (4, 4)) / 16
 
     # This is a 4x4 image sensor.
     # it tests for all cases I think. middle points, and edge points with 2
@@ -634,12 +638,46 @@ def test_bayer2rgb():
     green[1, 1] = (green[0, 1] + green[1, 0] + green[2, 1] + green[1, 2]) / 4
     green[2, 2] = (green[1, 2] + green[2, 1] + green[3, 2] + green[2, 3]) / 4
 
-    for b2rgb in bayer2rgb_funcs:
-        color_image = b2rgb(bayer_image, 'rggb')
-        assert_almost_equal(expected_color_image, color_image)
+    test_debayer(bayer_image, expected_color_image, 'rggb')
 
     # bggr
     red[...], blue[...] = blue.copy(), red.copy()
-    for b2rgb in bayer2rgb_funcs:
-        color_image = b2rgb(bayer_image, 'bggr')
-        assert_almost_equal(expected_color_image, color_image)
+    test_debayer(bayer_image, expected_color_image, 'bggr')
+
+    # gbrg
+    expected_color_image = np.zeros((4, 4, 3), dtype=bayer_image.dtype)
+    expected_color_image[0::2, 0::2, 1] = bayer_image[0::2, 0::2]
+    expected_color_image[1::2, 0::2, 0] = bayer_image[1::2, 0::2]
+    expected_color_image[0::2, 1::2, 2] = bayer_image[0::2, 1::2]
+    expected_color_image[1::2, 1::2, 1] = bayer_image[1::2, 1::2]
+
+    red = expected_color_image[..., 0]
+    green = expected_color_image[..., 1]
+    blue = expected_color_image[..., 2]
+
+    red[(1, 3), 1] = (red[(1, 3), 0] + red[(1, 3), 2]) / 2
+    red[(1, 3), 3] = red[(1, 3), 2]
+    red[2, :] = (red[1, :] + red[3, :]) / 2
+    red[0, :] = red[1, :]
+
+    blue[(0, 2), 2] = (blue[(0, 2), 1] + blue[(0, 2), 3]) / 2
+    blue[(0, 2), 0] = blue[(0, 2), 1]
+    blue[1, :] = (blue[0, :] + blue[2, :]) / 2
+    blue[-1, :] = blue[-2, :]
+
+    green[0, -1] = (green[0, -2] + green[1, -1]) / 2
+    green[-1, 0] = (green[-2, 0] + green[-1, 1]) / 2
+    green[0, 1] = green[0, 0] * 0.25 + green[0, 2] * 0.25 + green[1, 1] * 0.5
+    green[1, 0] = green[0, 0] * 0.25 + green[2, 0] * 0.25 + green[1, 1] * 0.5
+
+    green[-1, 2] = green[-1, 1] * 0.25 + green[-1, 3] * 0.25 + green[-2, 2] * 0.5  # noqa
+    green[2, -1] = green[1, -1] * 0.25 + green[3, -1] * 0.25 + green[2, -2] * 0.5  # noqa
+
+    green[2, 1] = (green[1, 1] + green[3, 1] + green[2, 2] + green[2, 0]) * 0.25  # noqa
+    green[1, 2] = (green[1, 1] + green[1, 3] + green[2, 2] + green[0, 2]) * 0.25  # noqa
+
+    test_debayer(bayer_image, expected_color_image, 'gbrg')
+
+    # grbg
+    red[...], blue[...] = blue.copy(), red.copy()
+    test_debayer(bayer_image, expected_color_image, 'grbg')
