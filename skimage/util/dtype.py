@@ -26,7 +26,7 @@ _supported_types = (np.bool_, np.bool8,
                     np.float16, np.float32, np.float64)
 
 
-def check_precision_loss(dtypeobj_in, dtypeobj_out,
+def _check_precision_loss(dtypeobj_in, dtypeobj_out,
                          output_warning=False, int_same_size_lossy=False):
     """Check if conversion between images will incur loss of precision.
 
@@ -280,7 +280,7 @@ def convert(image, dtype, force_copy=False, uniform=False):
         imin_out = np.iinfo(dtype_out).min
         imax_out = np.iinfo(dtype_out).max
 
-    check_precision_loss(dtype_in, dtype_out, output_warning=True)
+    _check_precision_loss(dtype_in, dtype_out, output_warning=True)
 
     # any -> binary
     if kind_out == 'b':
