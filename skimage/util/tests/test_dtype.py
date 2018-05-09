@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 from skimage import (img_as_int, img_as_float,
                      img_as_uint, img_as_ubyte)
-from skimage.util.dtype import convert
+from skimage.util.dtype import convert, check_precision_loss
 
 from skimage._shared._warnings import expected_warnings
 from skimage._shared import testing
@@ -116,3 +116,69 @@ def test_bool():
         assert np.sum(converted_) == dtype_range[dt][1]
         converted8 = func(img8)
         assert np.sum(converted8) == dtype_range[dt][1]
+
+
+def test_check_precision_loss():
+    dtype_pairs_conversion = [(np.uint8, np.uint8, False),
+                              (np.uint8, np.int8, True),
+                              (np.uint8, np.uint16, False),
+                              (np.uint8, np.int16, False),
+                              (np.uint8, np.float32, False),
+                              (np.uint8, np.float64, False),
+
+                              (np.int8, np.uint8, False),
+                              (np.int8, np.int8, False),
+                              (np.int8, np.uint16, False),
+                              (np.int8, np.int16, False),
+                              (np.int8, np.float32, False),
+                              (np.int8, np.float64, False),
+
+                              (np.int16, np.uint8, True),
+                              (np.int16, np.int8, True),
+                              (np.int16, np.uint16, False),
+                              (np.int16, np.int16, False),
+                              (np.int16, np.float32, False),
+                              (np.int16, np.float64, False),
+
+                              (np.uint16, np.uint8, True),
+                              (np.uint16, np.int8, True),
+                              (np.uint16, np.uint16, False),
+                              (np.uint16, np.int16, True),
+                              (np.uint16, np.float32, False),
+                              (np.uint16, np.float64, False),
+
+                              (np.Float32, np.uint8, True),
+                              (np.Float32, np.int8, True),
+                              (np.Float32, np.uint16, True),
+                              (np.Float32, np.int16, True),
+                              (np.Float32, np.float32, False),
+                              (np.Float32, np.float64, False),
+
+                              (np.Float64, np.uint8, True),
+                              (np.Float64, np.int8, True),
+                              (np.Float64, np.uint16, True),
+                              (np.Float64, np.int16, True),
+                              (np.Float64, np.float32, True),
+                              (np.Float64, np.float64, False),
+
+                              (np.bool, np.uint8, False),
+                              (np.bool, np.int8, False),
+                              (np.bool, np.uint16, False),
+                              (np.bool, np.int16, False),
+                              (np.bool, np.float32, False),
+                              (np.bool, np.float64, False),
+
+                              (np.uint8, np.bool, True),
+                              (np.int8, np.bool, True),
+                              (np.uint16, np.bool, True),
+                              (np.int16, np.bool, True),
+                              (np.float32, np.bool, True),
+                              (np.float64, np.bool, True),
+                              ]
+
+    for (dtype_in, dtype_out, expected_value) in dtype_pairs_conversion:
+        assert check_precision_loss(
+            dtype_in, dtype_out, output_warning=False) == expected_value
+
+    assert check_precision_loss(dtype.uint8, dtype.uint8,
+                                output_warning=False, int_same_size_lossy=True)

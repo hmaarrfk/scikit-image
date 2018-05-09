@@ -26,6 +26,73 @@ _supported_types = (np.bool_, np.bool8,
                     np.float16, np.float32, np.float64)
 
 
+def _check_precision_loss(dtypeobj_in, dtypeobj_out,
+                         issue_warnings=False, int_same_size_lossy=False):
+    """Check if conversion between images will incur loss of precision.
+
+    Generally speaking, the output object needs to have more significant bits
+    than the input kind.
+
+    Details:
+        float -> signed/unsigned ints will always return true.
+        signed/unsigned -> float of same number of bytes will return true.
+
+    Parameters
+    ----------
+    dtypeobj_in: np.dtype
+        dtype of the input image.
+    dtypeobj_out: np.dtype
+        dtype of the output image.
+    output_warning: bool, optional
+        Outputs a warning using `warn` if operation will incur loss of
+        precision.
+    int_same_size_ok: bool, optional
+        Should conversion between integers of the same same (and signedness)
+        be considered lossy.
+
+    """
+    kind_in = dtypeobj_in.kind
+    kind_out = dtypeobj_out.kind
+    itemsize_in = dtypeobj_in.itemsize
+    itemsize_out = dtypeobj_out.itemsize
+
+    has_loss = False
+
+    if kind_in != 'b' and kind_out == 'b':
+        has_loss = True
+    elif kind_in == 'f' and kind_out == 'f':
+        # float->float
+        if itemsize_out < itemsize_in:
+            has_loss = True
+    elif kind_in == 'f':
+        # float -> other (integer or bool)
+        has_loss = True
+    elif kind_out == 'f':
+        # signed/unsigned int -> float
+        if itemsize_in >= itemsize_out:
+            has_loss = True
+    elif ((kind_in == 'i' and kind_out == 'i') or
+            (kind_in == 'u' and kind_out == 'u')):
+        # signed/unsigned to same kind
+        if itemsize_out < itemsize_in:
+            has_loss = True
+        elif int_same_size_lossy and itemsize_out == itemsize_in:
+            has_loss = True
+    elif kind_in == 'u' and kind_out == 'i':
+        # usigned -> signed int
+        if itemsize_in >= itemsize_out:
+            has_loss = True
+    elif kind_in == 'i' and kind_out == 'u':
+        # signed int to unsigned
+        if itemsize_out < itemsize_in:
+            has_loss = True
+
+    if issue_warnings and has_loss:
+        warn("Possible precision loss when converting from {} to {}"
+             .format(dtypeobj_in, dtypeobj_out))
+    return has_loss
+
+
 def dtype_limits(image, clip_negative=None):
     """Return intensity limits, i.e. (min, max) tuple, of the image's dtype.
 
@@ -53,7 +120,8 @@ def dtype_limits(image, clip_negative=None):
     return imin, imax
 
 
-def convert(image, dtype, force_copy=False, uniform=False):
+def convert(image, dtype, force_copy=False, uniform=False,
+            issue_warnings=True):
     """
     Convert an image to the requested data-type.
 
@@ -81,6 +149,8 @@ def convert(image, dtype, force_copy=False, uniform=False):
         By default (uniform=False) floating point values are scaled and
         rounded to the nearest integers, which minimizes back and forth
         conversion errors.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     References
     ----------
@@ -113,14 +183,11 @@ def convert(image, dtype, force_copy=False, uniform=False):
         raise ValueError("Can not convert from {} to {}."
                          .format(dtypeobj_in, dtypeobj_out))
 
-    def sign_loss():
-        warn("Possible sign loss when converting negative image of type "
-             "{} to positive image of type {}."
-             .format(dtypeobj_in, dtypeobj_out))
-
-    def prec_loss():
-        warn("Possible precision loss when converting from {} to {}"
-             .format(dtypeobj_in, dtypeobj_out))
+    def sign_loss(issue_warnings=True):
+        if issue_warnings:
+            warn("Possible sign loss when converting negative image of type "
+                "{} to positive image of type {}."
+                .format(dtypeobj_in, dtypeobj_out))
 
     def _dtype_itemsize(itemsize, *dtypes):
         # Return first of `dtypes` with itemsize greater than `itemsize`
@@ -217,11 +284,12 @@ def convert(image, dtype, force_copy=False, uniform=False):
         imin_out = np.iinfo(dtype_out).min
         imax_out = np.iinfo(dtype_out).max
 
+    _check_precision_loss(dtype_in, dtype_out, issue_warnings=issue_warnings)
+
     # any -> binary
     if kind_out == 'b':
         if kind_in in "fi":
             sign_loss()
-        prec_loss()
         return image > dtype_in(dtype_range[dtype_in][1] / 2)
 
     # binary -> any
@@ -237,12 +305,9 @@ def convert(image, dtype, force_copy=False, uniform=False):
             raise ValueError("Images of type float must be between -1 and 1.")
         if kind_out == 'f':
             # float -> float
-            if itemsize_in > itemsize_out:
-                prec_loss()
             return image.astype(dtype_out)
 
         # floating point -> integer
-        prec_loss()
         # use float type that can represent output integer type
         computation_type = _dtype_itemsize(itemsize_out, dtype_in,
                                            np.float32, np.float64)
@@ -274,9 +339,6 @@ def convert(image, dtype, force_copy=False, uniform=False):
 
     # signed/unsigned int -> float
     if kind_out == 'f':
-        if itemsize_in >= itemsize_out:
-            prec_loss()
-
         # use float type that can exactly represent input integers
         computation_type = _dtype_itemsize(itemsize_in, dtype_out,
                                            np.float32, np.float64)
@@ -323,7 +385,7 @@ def convert(image, dtype, force_copy=False, uniform=False):
     return image.astype(dtype_out)
 
 
-def img_as_float32(image, force_copy=False):
+def img_as_float32(image, force_copy=False, issue_warnings=True):
     """Convert an image to single-precision (32-bit) floating point format.
 
     Parameters
@@ -332,6 +394,8 @@ def img_as_float32(image, force_copy=False):
         Input image.
     force_copy : bool, optional
         Force a copy of the data, irrespective of its current dtype.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Returns
     -------
@@ -349,7 +413,7 @@ def img_as_float32(image, force_copy=False):
     return convert(image, np.float32, force_copy)
 
 
-def img_as_float64(image, force_copy=False):
+def img_as_float64(image, force_copy=False, issue_warnings=True):
     """Convert an image to double-precision (64-bit) floating point format.
 
     Parameters
@@ -358,6 +422,8 @@ def img_as_float64(image, force_copy=False):
         Input image.
     force_copy : bool, optional
         Force a copy of the data, irrespective of its current dtype.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Returns
     -------
@@ -372,10 +438,12 @@ def img_as_float64(image, force_copy=False):
     and can be outside the ranges [0.0, 1.0] or [-1.0, 1.0].
 
     """
-    return convert(image, np.float64, force_copy)
+    return convert(image, np.float64, force_copy,
+                   issue_warnings=issue_warnings)
 
 
-def img_as_float(image, force_copy=False, default_dtype=np.float64):
+def img_as_float(image, force_copy=False, default_dtype=np.float64,
+                 issue_warnings=True):
     """Ensure that an image is of floating point type.
 
     First checks if the image is a floating point (any precision). If not
@@ -389,6 +457,8 @@ def img_as_float(image, force_copy=False, default_dtype=np.float64):
         Force a copy of the data, irrespective of its current dtype.
     default_dtype: np.dtype
         Desired for the image if it is not already a float.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Returns
     -------
@@ -404,10 +474,11 @@ def img_as_float(image, force_copy=False, default_dtype=np.float64):
         else:
             return image
     else:
-        return convert(image, dtype=default_dtype, force_copy=force_copy)
+        return convert(image, dtype=default_dtype, force_copy=force_copy,
+                       issue_warnings=issue_warnings)
 
 
-def img_as_uint(image, force_copy=False):
+def img_as_uint(image, force_copy=False, issue_warnings=True):
     """Convert an image to 16-bit unsigned integer format.
 
     Parameters
@@ -421,6 +492,8 @@ def img_as_uint(image, force_copy=False):
     -------
     out : ndarray of uint16
         Output image.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Notes
     -----
@@ -428,10 +501,11 @@ def img_as_uint(image, force_copy=False):
     Positive values are scaled between 0 and 65535.
 
     """
-    return convert(image, np.uint16, force_copy)
+    return convert(image, np.uint16, force_copy,
+                   issue_warnings=issue_warnings)
 
 
-def img_as_int(image, force_copy=False):
+def img_as_int(image, force_copy=False, issue_warnings=True):
     """Convert an image to 16-bit signed integer format.
 
     Parameters
@@ -440,6 +514,8 @@ def img_as_int(image, force_copy=False):
         Input image.
     force_copy : bool, optional
         Force a copy of the data, irrespective of its current dtype.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Returns
     -------
@@ -453,10 +529,11 @@ def img_as_int(image, force_copy=False):
     the output image will still only have positive values.
 
     """
-    return convert(image, np.int16, force_copy)
+    return convert(image, np.int16, force_copy,
+                   issue_warnings=issue_warnings)
 
 
-def img_as_ubyte(image, force_copy=False):
+def img_as_ubyte(image, force_copy=False, issue_warnings=True):
     """Convert an image to 8-bit unsigned integer format.
 
     Parameters
@@ -465,6 +542,8 @@ def img_as_ubyte(image, force_copy=False):
         Input image.
     force_copy : bool, optional
         Force a copy of the data, irrespective of its current dtype.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Returns
     -------
@@ -477,10 +556,11 @@ def img_as_ubyte(image, force_copy=False):
     Positive values are scaled between 0 and 255.
 
     """
-    return convert(image, np.uint8, force_copy)
+    return convert(image, np.uint8, force_copy,
+                   issue_warnings=issue_warnings)
 
 
-def img_as_bool(image, force_copy=False):
+def img_as_bool(image, force_copy=False, issue_warnings=True):
     """Convert an image to boolean format.
 
     Parameters
@@ -489,6 +569,8 @@ def img_as_bool(image, force_copy=False):
         Input image.
     force_copy : bool, optional
         Force a copy of the data, irrespective of its current dtype.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Returns
     -------
@@ -501,4 +583,5 @@ def img_as_bool(image, force_copy=False):
     half is False. All negative values (if present) are False.
 
     """
-    return convert(image, np.bool_, force_copy)
+    return convert(image, np.bool_, force_copy,
+                   issue_warnings=issue_warnings)
