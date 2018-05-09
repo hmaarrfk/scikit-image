@@ -51,6 +51,8 @@ def _check_precision_loss(dtypeobj_in, dtypeobj_out,
         be considered lossy.
 
     """
+    dtypeobj_in = np.dtype(dtypeobj_in)
+    dtypeobj_out = np.dtype(dtypeobj_out)
     kind_in = dtypeobj_in.kind
     kind_out = dtypeobj_out.kind
     itemsize_in = dtypeobj_in.itemsize
