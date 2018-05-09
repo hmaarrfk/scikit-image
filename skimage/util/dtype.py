@@ -443,13 +443,13 @@ def img_as_uint(image, force_copy=False, issue_warnings=True):
         Input image.
     force_copy : bool, optional
         Force a copy of the data, irrespective of its current dtype.
+    issue_warnings: bool, optional
+        Output warnings during convertion (typically for precision loss).
 
     Returns
     -------
     out : ndarray of uint16
         Output image.
-    issue_warnings: bool, optional
-        Output warnings during convertion (typically for precision loss).
 
     Notes
     -----
