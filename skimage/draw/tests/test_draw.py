@@ -7,7 +7,8 @@ from skimage._shared.testing import assert_almost_equal
 from skimage.draw import (set_color, line, line_aa, polygon, polygon_perimeter,
                           circle, circle_perimeter, circle_perimeter_aa,
                           ellipse, ellipse_perimeter,
-                          _bezier_segment, bezier_curve, rectangle)
+                          _bezier_segment, bezier_curve, rectangle,
+                          rectangle_perimeter)
 from skimage.measure import regionprops
 
 
@@ -889,5 +890,78 @@ def test_rectangle_extent():
     start = (1, 1)
     extent = (3, 3)
     rr, cc = rectangle(start, extent=extent, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+def test_rectangle_perimiter():
+    expected = np.array([[0, 0, 0, 0, 0],
+                         [0, 1, 1, 1, 0],
+                         [0, 1, 0, 1, 0],
+                         [0, 1, 1, 1, 0],
+                         [0, 0, 0, 0, 0]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (2, 2)
+    extent = (1, 1)
+    rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (2, 2)
+    end = (3, 3)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+def test_rectangle_perimiter_clip():
+    expected = np.array([[0, 0, 0, 0, 0],
+                         [0, 1, 1, 1, 1],
+                         [0, 1, 0, 0, 0],
+                         [0, 1, 0, 0, 0],
+                         [0, 1, 0, 0, 0]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (2, 2)
+    extent = (10, 10)
+    rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape,
+                                 clip=False)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    expected = np.array([[0, 0, 0, 0, 0],
+                         [0, 1, 1, 1, 1],
+                         [0, 1, 0, 0, 1],
+                         [0, 1, 0, 0, 1],
+                         [0, 1, 1, 1, 1]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (2, 2)
+    extent = (10, 10)
+    rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape,
+                                 clip=True)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    expected = np.array([[0, 0, 1, 0, 0],
+                         [0, 0, 1, 0, 0],
+                         [1, 1, 1, 0, 0],
+                         [0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (-5, -5)
+    end = (2, 2)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape,
+                                 clip=False)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    expected = np.array([[1, 1, 1, 0, 0],
+                         [1, 0, 1, 0, 0],
+                         [1, 1, 1, 0, 0],
+                         [0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (-5, -5)
+    end = (2, 2)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape,
+                                 clip=True)
     img[rr, cc] = 1
     assert_array_equal(img, expected)

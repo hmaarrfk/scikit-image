@@ -612,7 +612,7 @@ def ellipse_perimeter(r, c, r_radius, c_radius, orientation=0, shape=None):
            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
 
 
-    Note that the positions of `ellipse` without specified `shape` can have 
+    Note that the positions of `ellipse` without specified `shape` can have
     also, negative values, as this is correct on the plane. On the other hand
     using these ellipse positions for an image afterwards may lead to appearing
     on the other side of image, because ``image[-1, -1] = image[end-1, end-1]``
@@ -764,3 +764,43 @@ def rectangle(start, end=None, extent=None, shape=None):
     coords = np.meshgrid(*[np.arange(st, en) for st, en in zip(tuple(tl),
                                                                tuple(br))])
     return coords
+
+
+def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
+    """Generate coordinates of pixels that are exactly around a rectangle.
+
+    Parameters
+    ----------
+    start : tuple
+        Origin point of the inner rectangle, e.g., ``(row, column)``.
+    end : tuple
+        End point of the inner rectangle ``(row, column)``.
+        Either `end` or `extent` must be specified.
+    extent : tuple
+        The extent (size) of the inner rectangle.  E.g.,
+        ``(num_rows, num_cols)``.
+        Either `end` or `extent` must be specified.
+    shape : tuple, optional
+        Image shape used to determine the maximum bounds of the output
+        coordinates. This is useful for clipping perimeters that exceed
+        the image size. By default, no clipping is done.
+    clip : bool, optional
+        Whether to clip the perimeter to the provided shape. If this is set
+        to True, the drawn figure will always be a closed polygon with all
+        edges visible.
+
+    Returns
+    -------
+    coords : array of int, shape (Ndim, Npoints)
+        The coordinates of all pixels in the rectangle.
+    """
+
+    if extent is not None:
+        end = np.array(start) + np.array(extent)
+    elif end is None:
+        raise ValueError("Either `end` or `extent` must be given")
+
+    start = (start[0] - 1, start[1] - 1)
+    r = [start[1], end[1], end[1], start[1], start[1]]
+    c = [start[0], start[0], end[0], end[0], start[0]]
+    return polygon_perimeter(r, c, shape=shape, clip=clip)
