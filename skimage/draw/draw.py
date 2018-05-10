@@ -793,6 +793,34 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
     -------
     coords : array of int, shape (Ndim, Npoints)
         The coordinates of all pixels in the rectangle.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from skimage.draw import rectangle_perimeter
+    >>> img = np.zeros((5, 5), dtype=np.uint8)
+    >>> start = (2, 2)
+    >>> end = (3, 3)
+    >>> rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
+    >>> img[rr, cc] = 1
+    >>> img
+    array([[0, 0, 0, 0, 0],
+           [0, 1, 1, 1, 0],
+           [0, 1, 0, 1, 0],
+           [0, 1, 1, 1, 0],
+           [0, 0, 0, 0, 0]], dtype=uint8)
+
+    >>> img = np.zeros((5, 5), dtype=np.uint8)
+    >>> rr, cc = rectangle_perimeter(start, end=(10, 10), shape=img.shape,
+                                     clip=True)
+    >>> img[rr, cc] = 1
+    >>> img
+    array([[0, 0, 0, 0, 0],
+           [0, 1, 1, 1, 1],
+           [0, 1, 0, 0, 1],
+           [0, 1, 0, 0, 1],
+           [0, 1, 1, 1, 1]], dtype=uint8)
+
     """
 
     if extent is not None:
