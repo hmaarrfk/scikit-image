@@ -893,6 +893,7 @@ def test_rectangle_extent():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
+
 def test_rectangle_perimiter():
     expected = np.array([[0, 0, 0, 0, 0],
                          [0, 1, 1, 1, 0],
