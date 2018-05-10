@@ -798,17 +798,17 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
     --------
     >>> import numpy as np
     >>> from skimage.draw import rectangle_perimeter
-    >>> img = np.zeros((5, 5), dtype=np.uint8)
-    >>> start = (2, 2)
-    >>> end = (3, 3)
+    >>> img = np.zeros((5, 6), dtype=np.uint8)
+    >>> start = (2, 3)
+    >>> end = (3, 4)
     >>> rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
     >>> img[rr, cc] = 1
     >>> img
-    array([[0, 0, 0, 0, 0],
-           [0, 1, 1, 1, 0],
-           [0, 1, 0, 1, 0],
-           [0, 1, 1, 1, 0],
-           [0, 0, 0, 0, 0]], dtype=uint8)
+    array([[0, 0, 0, 0, 0, 0],
+           [0, 0, 1, 1, 1, 0],
+           [0, 0, 1, 0, 1, 0],
+           [0, 0, 1, 1, 1, 0],
+           [0, 0, 0, 0, 0, 0]], dtype=uint8)
 
     >>> img = np.zeros((5, 5), dtype=np.uint8)
     >>> rr, cc = rectangle_perimeter(start, end=(10, 10), shape=img.shape,
@@ -829,6 +829,6 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
         raise ValueError("Either `end` or `extent` must be given")
 
     start = (start[0] - 1, start[1] - 1)
-    r = [start[1], end[1], end[1], start[1], start[1]]
-    c = [start[0], start[0], end[0], end[0], start[0]]
+    r = [start[0], start[0], end[0], end[0], start[0]]
+    c = [start[1], end[1], end[1], start[1], start[1]]
     return polygon_perimeter(r, c, shape=shape, clip=clip)
