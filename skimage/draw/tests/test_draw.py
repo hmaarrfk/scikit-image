@@ -913,6 +913,30 @@ def test_rectangle_perimiter():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
+    expected = np.array([[0, 0, 0, 0, 0, 0],
+                         [0, 0, 1, 1, 1, 0],
+                         [0, 0, 1, 0, 1, 0],
+                         [0, 0, 1, 1, 1, 0],
+                         [0, 0, 0, 0, 0, 0]], dtype=uint8)
+    img = np.zeros(expected.shape, dtype=np.uint8)
+    start = (2, 3)
+    end = (3, 4)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    expected = np.array([[0, 0, 0, 0, 0, 0],
+                         [0, 0, 1, 1, 1, 0],
+                         [0, 0, 1, 1, 1, 0],
+                         [0, 0, 0, 0, 0, 0]], dtype=uint8)
+    img = np.zeros(expected.shape, dtype=np.uint8)
+    start = (2, 3)
+    end = (2, 4)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+
 def test_rectangle_perimiter_clip():
     expected = np.array([[0, 0, 0, 0, 0],
                          [0, 1, 1, 1, 1],
