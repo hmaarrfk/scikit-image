@@ -182,3 +182,18 @@ def test_check_precision_loss():
 
     assert check_precision_loss(dtype.uint8, dtype.uint8,
                                 output_warning=False, int_same_size_lossy=True)
+
+def test_clobber():
+    # The image functions should not clobber the input arrays
+    # This is necessary in case somebody tries to optimize
+    # by not having a copy of the array during computation
+    for func_input_type in img_funcs:
+        for func_output_type in img_funcs:
+            img = np.random.rand(5, 5)
+
+            img_in = func_input_type(img)  # , issue_warnings=False)
+
+            img_in_before = img_in.copy()
+            img_out = func_output_type(img_in)
+
+            assert_equal(img_in, img_in_before)
