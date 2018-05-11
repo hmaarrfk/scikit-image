@@ -895,37 +895,6 @@ def test_rectangle_extent():
 
 
 def test_rectangle_perimiter():
-    expected = np.array([[0, 0, 0, 0, 0],
-                         [0, 1, 1, 1, 0],
-                         [0, 1, 0, 1, 0],
-                         [0, 1, 1, 1, 0],
-                         [0, 0, 0, 0, 0]], dtype=np.uint8)
-    img = np.zeros((5, 5), dtype=np.uint8)
-    start = (2, 2)
-    extent = (1, 1)
-    rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape)
-    img[rr, cc] = 1
-    assert_array_equal(img, expected)
-
-    img = np.zeros((5, 5), dtype=np.uint8)
-    start = (2, 2)
-    end = (2, 2)
-    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
-    img[rr, cc] = 1
-    assert_array_equal(img, expected)
-
-    expected = np.array([[0, 0, 0, 0, 0, 0],
-                         [0, 0, 1, 1, 1, 0],
-                         [0, 0, 1, 0, 1, 0],
-                         [0, 0, 1, 1, 1, 0],
-                         [0, 0, 0, 0, 0, 0]], dtype=np.uint8)
-    img = np.zeros(expected.shape, dtype=np.uint8)
-    start = (2, 3)
-    end = (2, 3)
-    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
-    img[rr, cc] = 1
-    assert_array_equal(img, expected)
-
     expected = np.array([[0, 0, 0, 0, 0, 0],
                          [0, 0, 1, 1, 1, 1],
                          [0, 0, 1, 0, 0, 1],
@@ -938,8 +907,16 @@ def test_rectangle_perimiter():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
+    img = np.zeros(expected.shape, dtype=np.uint8)
+    start = (2, 3)
+    extent = (1, 2)
+    rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
 
-def test_rectangle_perimiter_clip():
+
+def test_rectangle_perimiter_clip_bottom_right():
+    # clip=False
     expected = np.array([[0, 0, 0, 0, 0],
                          [0, 1, 1, 1, 1],
                          [0, 1, 0, 0, 0],
@@ -953,19 +930,21 @@ def test_rectangle_perimiter_clip():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
+    # clip=True
     expected = np.array([[0, 0, 0, 0, 0],
                          [0, 1, 1, 1, 1],
                          [0, 1, 0, 0, 1],
                          [0, 1, 0, 0, 1],
                          [0, 1, 1, 1, 1]], dtype=np.uint8)
     img = np.zeros((5, 5), dtype=np.uint8)
-    start = (2, 2)
-    extent = (10, 10)
     rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape,
                                  clip=True)
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
+
+def test_rectangle_perimiter_clip_top_left():
+    # clip=False
     expected = np.array([[0, 0, 0, 1, 0],
                          [0, 0, 0, 1, 0],
                          [0, 0, 0, 1, 0],
@@ -979,15 +958,67 @@ def test_rectangle_perimiter_clip():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
+    # clip=True
     expected = np.array([[1, 1, 1, 1, 0],
                          [1, 0, 0, 1, 0],
                          [1, 0, 0, 1, 0],
                          [1, 1, 1, 1, 0],
                          [0, 0, 0, 0, 0]], dtype=np.uint8)
     img = np.zeros((5, 5), dtype=np.uint8)
-    start = (-5, -5)
-    end = (2, 2)
     rr, cc = rectangle_perimeter(start, end=end, shape=img.shape,
                                  clip=True)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+
+def test_rectangle_perimiter_clip_top_right():
+    expected = np.array([[0, 1, 1, 1, 1],
+                         [0, 1, 0, 0, 1],
+                         [0, 1, 0, 0, 1],
+                         [0, 1, 1, 1, 1],
+                         [0, 0, 0, 0, 0]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (-10, 2)
+    end = (2, 10)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape,
+                                 clip=True)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    expected = np.array([[0, 1, 0, 0, 0],
+                         [0, 1, 0, 0, 0],
+                         [0, 1, 0, 0, 0],
+                         [0, 1, 1, 1, 1],
+                         [0, 0, 0, 0, 0]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape,
+                                 clip=False)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+
+def test_rectangle_perimiter_clip_bottom_left():
+    expected = np.array([[0, 0, 0, 0, 0],
+                         [1, 1, 1, 0, 0],
+                         [1, 0, 1, 0, 0],
+                         [1, 0, 1, 0, 0],
+                         [1, 1, 1, 0, 0]], dtype=np.uint8)
+    img = np.zeros((5, 5), dtype=np.uint8)
+    start = (2, -3)
+    end = (10, 1)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape,
+                                 clip=True)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    expected = np.array([[0, 0, 0, 0, 0],
+                         [1, 1, 1, 0, 0],
+                         [0, 0, 1, 0, 0],
+                         [0, 0, 1, 0, 0],
+                         [0, 0, 1, 0, 0]], dtype=np.uint8)
+
+    img = np.zeros((5, 5), dtype=np.uint8)
+    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape,
+                                 clip=False)
     img[rr, cc] = 1
     assert_array_equal(img, expected)

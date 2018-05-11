@@ -751,7 +751,7 @@ def rectangle(start, end=None, extent=None, shape=None):
 
     """
     if extent is not None:
-        end = np.array(start) + np.array(extent)
+        end = np.asarray(start) + np.asarray(extent)
     elif end is None:
         raise ValueError("Either `end` or `extent` must be given")
     tl = np.minimum(start, end)
@@ -791,7 +791,7 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
 
     Returns
     -------
-    coords : array of int, shape (Ndim, Npoints)
+    coords : array of int, shape (2, Npoints)
         The coordinates of all pixels in the rectangle.
 
     Examples
@@ -824,7 +824,7 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
     """
 
     if extent is not None:
-        end = np.array(start) + np.array(extent)
+        end = np.asarray(start) + np.asarray(extent)
     elif end is None:
         raise ValueError("Either `end` or `extent` must be given")
     top_left = np.minimum(start, end)
