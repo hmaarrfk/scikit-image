@@ -805,10 +805,10 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
     >>> img[rr, cc] = 1
     >>> img
     array([[0, 0, 0, 0, 0, 0],
-           [0, 0, 1, 1, 1, 0],
-           [0, 0, 1, 0, 1, 0],
-           [0, 0, 1, 1, 1, 0],
-           [0, 0, 0, 0, 0, 0]], dtype=uint8)
+           [0, 0, 1, 1, 1, 1],
+           [0, 0, 1, 0, 0, 1],
+           [0, 0, 1, 0, 0, 1],
+           [0, 0, 1, 1, 1, 1]], dtype=uint8)
 
     >>> img = np.zeros((5, 5), dtype=np.uint8)
     >>> rr, cc = rectangle_perimeter(start, end=(10, 10), shape=img.shape,
@@ -816,10 +816,10 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
     >>> img[rr, cc] = 1
     >>> img
     array([[0, 0, 0, 0, 0],
-           [0, 1, 1, 1, 1],
-           [0, 1, 0, 0, 1],
-           [0, 1, 0, 0, 1],
-           [0, 1, 1, 1, 1]], dtype=uint8)
+           [0, 0, 1, 1, 1],
+           [0, 0, 1, 0, 1],
+           [0, 0, 1, 0, 1],
+           [0, 0, 1, 1, 1]], dtype=uint8)
 
     """
 
@@ -827,8 +827,13 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
         end = np.array(start) + np.array(extent)
     elif end is None:
         raise ValueError("Either `end` or `extent` must be given")
-
-    start = (start[0] - 1, start[1] - 1)
-    r = [start[0], start[0], end[0], end[0], start[0]]
-    c = [start[1], end[1], end[1], start[1], start[1]]
+    top_left = np.minimum(start, end)
+    bottom_right = np.maximum(start, end)
+    if extent is None:
+        bottom_right += 1
+    top_left -= 1
+    r = [top_left[0], top_left[0], bottom_right[0], bottom_right[0],
+         top_left[0]]
+    c = [top_left[1], bottom_right[1], bottom_right[1], top_left[1],
+         top_left[1]]
     return polygon_perimeter(r, c, shape=shape, clip=clip)
