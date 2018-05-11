@@ -909,7 +909,7 @@ def test_rectangle_perimiter():
 
     img = np.zeros((5, 5), dtype=np.uint8)
     start = (2, 2)
-    end = (3, 3)
+    end = (2, 2)
     rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
     img[rr, cc] = 1
     assert_array_equal(img, expected)
@@ -918,18 +918,19 @@ def test_rectangle_perimiter():
                          [0, 0, 1, 1, 1, 0],
                          [0, 0, 1, 0, 1, 0],
                          [0, 0, 1, 1, 1, 0],
-                         [0, 0, 0, 0, 0, 0]], dtype=uint8)
+                         [0, 0, 0, 0, 0, 0]], dtype=np.uint8)
     img = np.zeros(expected.shape, dtype=np.uint8)
     start = (2, 3)
-    end = (3, 4)
+    end = (2, 3)
     rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
     expected = np.array([[0, 0, 0, 0, 0, 0],
-                         [0, 0, 1, 1, 1, 0],
-                         [0, 0, 1, 1, 1, 0],
-                         [0, 0, 0, 0, 0, 0]], dtype=uint8)
+                         [0, 0, 1, 1, 1, 1],
+                         [0, 0, 1, 0, 0, 1],
+                         [0, 0, 1, 1, 1, 1],
+                         [0, 0, 0, 0, 0, 0]], dtype=np.uint8)
     img = np.zeros(expected.shape, dtype=np.uint8)
     start = (2, 3)
     end = (2, 4)
@@ -965,10 +966,10 @@ def test_rectangle_perimiter_clip():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
-    expected = np.array([[0, 0, 1, 0, 0],
-                         [0, 0, 1, 0, 0],
-                         [1, 1, 1, 0, 0],
-                         [0, 0, 0, 0, 0],
+    expected = np.array([[0, 0, 0, 1, 0],
+                         [0, 0, 0, 1, 0],
+                         [0, 0, 0, 1, 0],
+                         [1, 1, 1, 1, 0],
                          [0, 0, 0, 0, 0]], dtype=np.uint8)
     img = np.zeros((5, 5), dtype=np.uint8)
     start = (-5, -5)
@@ -978,10 +979,10 @@ def test_rectangle_perimiter_clip():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
-    expected = np.array([[1, 1, 1, 0, 0],
-                         [1, 0, 1, 0, 0],
-                         [1, 1, 1, 0, 0],
-                         [0, 0, 0, 0, 0],
+    expected = np.array([[1, 1, 1, 1, 0],
+                         [1, 0, 0, 1, 0],
+                         [1, 0, 0, 1, 0],
+                         [1, 1, 1, 1, 0],
                          [0, 0, 0, 0, 0]], dtype=np.uint8)
     img = np.zeros((5, 5), dtype=np.uint8)
     start = (-5, -5)
