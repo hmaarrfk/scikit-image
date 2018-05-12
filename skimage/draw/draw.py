@@ -705,6 +705,9 @@ def rectangle(start, end=None, extent=None, shape=None):
         The extent (size) of the drawn rectangle.  E.g.,
         ``([num_planes,] num_rows, num_cols)``.
         Either `end` or `extent` must be specified.
+        A negative extent is valid, and will result in a rectangle
+        going along the oposite direction. If extent is negative, the
+        `start` point is not included.
     shape : tuple, optional
         Image shape used to determine the maximum bounds of the output
         coordinates. This is useful for clipping rectangles that exceed
@@ -749,15 +752,30 @@ def rectangle(start, end=None, extent=None, shape=None):
            [0, 1, 1, 1, 0],
            [0, 0, 0, 0, 0]], dtype=uint8)
 
+    >>> import numpy as np
+    >>> from skimage.draw import rectangle
+    >>> img = np.zeros((6, 6), dtype=np.uint8)
+    >>> start = (3, 3)
+    >>>
+    >>> rr, cc = rectangle(start, extent=(2, 2))
+    >>> img[rr, cc] = 1
+    >>> rr, cc = rectangle(start, extent=(-2, 2))
+    >>> img[rr, cc] = 2
+    >>> rr, cc = rectangle(start, extent=(-2, -2))
+    >>> img[rr, cc] = 3
+    >>> rr, cc = rectangle(start, extent=(2, -2))
+    >>> img[rr, cc] = 4
+    >>> print(img)
+    [[0 0 0 0 0 0]
+     [0 3 3 2 2 0]
+     [0 3 3 2 2 0]
+     [0 4 4 1 1 0]
+     [0 4 4 1 1 0]
+     [0 0 0 0 0 0]]
+
     """
-    if extent is not None:
-        end = np.asarray(start) + np.asarray(extent)
-    elif end is None:
-        raise ValueError("Either `end` or `extent` must be given")
-    tl = np.minimum(start, end)
-    br = np.maximum(start, end)
-    if extent is None:
-        br += 1
+    br, tl = _rectangle_bounds(start=start, end=end, extent=extent)
+
     if shape is not None:
         br = np.minimum(shape, br)
         tl = np.maximum(np.zeros_like(shape), tl)
@@ -780,6 +798,8 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
         The extent (size) of the inner rectangle.  E.g.,
         ``(num_rows, num_cols)``.
         Either `end` or `extent` must be specified.
+        Negative extents are permitted. See `rectangle` to better
+        understand how they behave.
     shape : tuple, optional
         Image shape used to determine the maximum bounds of the output
         coordinates. This is useful for clipping perimeters that exceed
@@ -822,18 +842,30 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
            [0, 0, 1, 1, 1]], dtype=uint8)
 
     """
+    bottom_right, top_left = _rectangle_bounds(start=start,
+                                               end=end,
+                                               extent=extent)
 
-    if extent is not None:
-        end = np.asarray(start) + np.asarray(extent)
-    elif end is None:
-        raise ValueError("Either `end` or `extent` must be given")
-    top_left = np.minimum(start, end)
-    bottom_right = np.maximum(start, end)
-    if extent is None:
-        bottom_right += 1
     top_left -= 1
     r = [top_left[0], top_left[0], bottom_right[0], bottom_right[0],
          top_left[0]]
     c = [top_left[1], bottom_right[1], bottom_right[1], top_left[1],
          top_left[1]]
     return polygon_perimeter(r, c, shape=shape, clip=clip)
+
+
+def _rectangle_bounds(*, start, end, extent):
+    if end is None and extent is None:
+        raise ValueError("Either `end` or `extent` must be given.")
+    if end is not None and extent is not None:
+        raise ValueError("Cannot provide both `end` and `extent`.")
+
+    if extent is not None:
+        end = np.asarray(start) + np.asarray(extent)
+    top_left = np.minimum(start, end)
+    bottom_right = np.maximum(start, end)
+
+    if extent is None:
+        bottom_right += 1
+
+    return (bottom_right, top_left)

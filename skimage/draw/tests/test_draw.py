@@ -872,10 +872,16 @@ def test_rectangle_end():
                          [0, 1, 1, 1, 0],
                          [0, 1, 1, 1, 0],
                          [0, 0, 0, 0, 0]], dtype=np.uint8)
-    img = np.zeros((5, 5), dtype=np.uint8)
     start = (0, 1)
     end = (3, 3)
+    img = np.zeros((5, 5), dtype=np.uint8)
     rr, cc = rectangle(start, end=end, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    # Swap start and end
+    img = np.zeros((5, 5), dtype=np.uint8)
+    rr, cc = rectangle(end=start, start=end, shape=img.shape)
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
@@ -886,10 +892,38 @@ def test_rectangle_extent():
                          [0, 1, 1, 1, 0],
                          [0, 1, 1, 1, 0],
                          [0, 0, 0, 0, 0]], dtype=np.uint8)
-    img = np.zeros((5, 5), dtype=np.uint8)
     start = (1, 1)
     extent = (3, 3)
+    img = np.zeros((5, 5), dtype=np.uint8)
     rr, cc = rectangle(start, extent=extent, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+
+def test_rectangle_extent_negative():
+    # These two tests should be done together.
+    expected = np.array([[0, 0, 0, 0, 0, 0],
+                         [0, 0, 1, 1, 1, 1],
+                         [0, 0, 1, 2, 2, 1],
+                         [0, 0, 1, 1, 1, 1],
+                         [0, 0, 0, 0, 0, 0]], dtype=np.uint8)
+
+    start = (3, 5)
+    extent = (-1, -2)
+    img = np.zeros(expected.shape, dtype=np.uint8)
+    rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape)
+    img[rr, cc] = 1
+
+    rr, cc = rectangle(start, extent=extent, shape=img.shape)
+    img[rr, cc] = 2
+    assert_array_equal(img, expected)
+
+    # Ensure that rr and cc have no overlap
+    img = np.zeros(expected.shape, dtype=np.uint8)
+    rr, cc = rectangle(start, extent=extent, shape=img.shape)
+    img[rr, cc] = 2
+
+    rr, cc = rectangle_perimeter(start, extent=extent, shape=img.shape)
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
@@ -900,10 +934,17 @@ def test_rectangle_perimiter():
                          [0, 0, 1, 0, 0, 1],
                          [0, 0, 1, 1, 1, 1],
                          [0, 0, 0, 0, 0, 0]], dtype=np.uint8)
-    img = np.zeros(expected.shape, dtype=np.uint8)
     start = (2, 3)
     end = (2, 4)
-    rr, cc = rectangle_perimeter(start, end=end, shape=img.shape)
+    img = np.zeros(expected.shape, dtype=np.uint8)
+    # Test that the default parameter is indeed end
+    rr, cc = rectangle_perimeter(start, end, shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    # Swap start and end
+    img = np.zeros(expected.shape, dtype=np.uint8)
+    rr, cc = rectangle_perimeter(end=start, start=end, shape=img.shape)
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
