@@ -885,6 +885,17 @@ def test_rectangle_end():
     img[rr, cc] = 1
     assert_array_equal(img, expected)
 
+    # Bottom left and top right
+    img = np.zeros((5, 5), dtype=np.uint8)
+    rr, cc = rectangle(start=(3, 1), end=(0, 3), shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
+    img = np.zeros((5, 5), dtype=np.uint8)
+    rr, cc = rectangle(end=(3, 1), start=(0, 3), shape=img.shape)
+    img[rr, cc] = 1
+    assert_array_equal(img, expected)
+
 
 def test_rectangle_extent():
     expected = np.array([[0, 0, 0, 0, 0],
