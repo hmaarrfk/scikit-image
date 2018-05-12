@@ -831,8 +831,7 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
            [0, 0, 1, 1, 1, 1]], dtype=uint8)
 
     >>> img = np.zeros((5, 5), dtype=np.uint8)
-    >>> rr, cc = rectangle_perimeter(start, end=(10, 10), shape=img.shape,
-                                     clip=True)
+    >>> rr, cc = rectangle_perimeter(start, end=(10, 10), shape=img.shape, clip=True)
     >>> img[rr, cc] = 1
     >>> img
     array([[0, 0, 0, 0, 0],
