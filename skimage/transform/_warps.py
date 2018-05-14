@@ -356,7 +356,7 @@ def rotate(image, angle, resize=False, center=None, order=1, mode='constant',
     tform1 = SimilarityTransform(translation=center)
     tform2 = SimilarityTransform(rotation=np.deg2rad(angle))
     tform3 = SimilarityTransform(translation=-center)
-    tform = tform3 + tform2 + tform1
+    tform = tform1 @ tform2 @ tform3
 
     output_shape = None
     if resize:
@@ -379,7 +379,7 @@ def rotate(image, angle, resize=False, center=None, order=1, mode='constant',
         # fit output image in new shape
         translation = (minc, minr)
         tform4 = SimilarityTransform(translation=translation)
-        tform = tform4 + tform
+        tform = tform @ tform4
 
     return warp(image, tform, output_shape=output_shape, order=order,
                 mode=mode, cval=cval, clip=clip, preserve_range=preserve_range)
@@ -831,8 +831,9 @@ def warp(image, inverse_map, map_args={}, output_shape=None, order=1,
             matrix = inverse_map.params
 
         elif (hasattr(inverse_map, '__name__') and
-              inverse_map.__name__ == 'inverse' and
+              inverse_map.__name__ == 'inverse_map' and
               get_bound_method_class(inverse_map) in HOMOGRAPHY_TRANSFORMS):
+            # TODO: do we still need this introspection hack?
             # inverse_map is the inverse of a homography
             matrix = np.linalg.inv(six.get_method_self(inverse_map).params)
 
