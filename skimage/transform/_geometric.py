@@ -695,13 +695,7 @@ class ProjectiveTransform(GeometricTransform):
              "``@`` compared to ``+``.",
              UserWarning)
         if isinstance(other, ProjectiveTransform):
-            # combination of the same types result in a transformation of this
-            # type again, otherwise use general projective transformation
-            if type(self) == type(other):
-                tform = self.__class__
-            else:
-                tform = ProjectiveTransform
-            return tform(other.params.dot(self.params))
+            return other.__matmul__(self)
         else:
             raise TypeError("Cannot combine transformations of differing "
                             "types.")
