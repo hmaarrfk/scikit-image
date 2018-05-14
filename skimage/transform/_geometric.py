@@ -164,25 +164,17 @@ class GeometricTransform(object):
         """
         raise NotImplementedError()
 
-    def forward_map(self, coords):
-        __doc__ = self.__call__.__doc__
-        return self(coords)
-
-    def inverse_map(self, coords):
-        """Apply inverse transformation.
-
-        Parameters
-        ----------
-        coords : (N, 2) array
-            Destination coordinates.
-
-        Returns
-        -------
-        coords : (N, 2) array
-            Source coordinates.
-
-        """
+    @property
+    def inverse_params(self):
         raise NotImplementedError()
+
+    @property
+    def inverse(self):
+        """Return the inverse transformation."""
+        # ASK: Can you make a property a class method too?
+        # I don't thinkl that solves out problem though, we would still
+        # have to use some kind of instrospection no?
+        return type(self)(matrix=self.inverse_params)
 
     def residuals(self, src, dst):
         """Determine residuals of transformed destination coordinates.
@@ -270,23 +262,6 @@ class FundamentalMatrixTransform(GeometricTransform):
         """
         coords_homogeneous = np.column_stack([coords, np.ones(coords.shape[0])])
         return np.dot(coords_homogeneous, self.params.T)
-
-    def inverse_map(self, coords):
-        """Apply inverse transformation.
-
-        Parameters
-        ----------
-        coords : (N, 2) array
-            Destination coordinates.
-
-        Returns
-        -------
-        coords : (N, 3) array
-            Epipolar lines in the source image.
-
-        """
-        coords_homogeneous = np.column_stack([coords, np.ones(coords.shape[0])])
-        return np.dot(coords_homogeneous, self.inverse_params.T)
 
     def _setup_constraint_matrix(self, src, dst):
         """Setup and solve the homogeneous epipolar constraint matrix::
@@ -580,22 +555,6 @@ class ProjectiveTransform(GeometricTransform):
         """
         return self._apply_mat(coords, self.params)
 
-    def inverse_map(self, coords):
-        """Apply inverse transformation.
-
-        Parameters
-        ----------
-        coords : (N, 2) array
-            Destination coordinates.
-
-        Returns
-        -------
-        coords : (N, 2) array
-            Source coordinates.
-
-        """
-        return self._apply_mat(coords, self.inverse_params)
-
     def estimate(self, src, dst):
         """Estimate the transformation from a set of corresponding points.
 
@@ -711,10 +670,6 @@ class ProjectiveTransform(GeometricTransform):
             else:
                 tform = ProjectiveTransform
             return tform(other.params.dot(self.params))
-        elif (hasattr(other, '__name__')
-                and other.__name__ == 'inverse_map'
-                and hasattr(get_bound_method_class(other), 'inverse_params')):
-            return ProjectiveTransform(other.__self__.inverse_params.dot(self.params))
         else:
             raise TypeError("Cannot combine transformations of differing "
                             "types.")
@@ -893,6 +848,10 @@ class PiecewiseAffineTransform(GeometricTransform):
             out[index_mask, :] = affine(coords[index_mask, :])
 
         return out
+
+    @property
+    def inverse(self):
+        raise NotImplementedError()
 
     def inverse_map(self, coords):
         """Apply inverse transformation.
@@ -1075,7 +1034,7 @@ class SimilarityTransform(EuclideanTransform):
             ])
             self.params[0:2, 0:2] *= scale
             self.params[0:2, 2] = translation
-            
+
 
     def estimate(self, src, dst):
         """Estimate the transformation from a set of corresponding points.
@@ -1253,7 +1212,8 @@ class PolynomialTransform(GeometricTransform):
 
         return dst
 
-    def inverse_map(self, coords):
+    @property
+    def inverse(self):
         raise Exception(
             'There is no explicit way to do the inverse polynomial '
             'transformation. Instead, estimate the inverse transformation '
