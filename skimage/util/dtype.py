@@ -244,7 +244,6 @@ def convert(image, dtype, force_copy=False, uniform=False,
             return a.copy() if copy else a
         elif n > m:
             # downscale with precision loss
-            prec_loss()
             if copy:
                 b = np.empty(a.shape, _dtype_bits(kind, m))
                 np.floor_divide(a, 2**(n - m), out=b, dtype=a.dtype,
@@ -266,7 +265,6 @@ def convert(image, dtype, force_copy=False, uniform=False,
         else:
             # upscale to a multiple of `n` bits,
             # then downscale with precision loss
-            prec_loss()
             o = (m // n + 1) * n
             if copy:
                 b = np.empty(a.shape, _dtype_bits(kind, o))

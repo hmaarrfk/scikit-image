@@ -2,7 +2,8 @@ import numpy as np
 import itertools
 from skimage import (img_as_int, img_as_float,
                      img_as_uint, img_as_ubyte)
-from skimage.util.dtype import convert, check_precision_loss
+from skimage.util.dtype import convert
+from skimage.util.dtype import _check_precision_loss as check_precision_loss
 
 from skimage._shared._warnings import expected_warnings
 from skimage._shared import testing
@@ -147,19 +148,19 @@ def test_check_precision_loss():
                               (np.uint16, np.float32, False),
                               (np.uint16, np.float64, False),
 
-                              (np.Float32, np.uint8, True),
-                              (np.Float32, np.int8, True),
-                              (np.Float32, np.uint16, True),
-                              (np.Float32, np.int16, True),
-                              (np.Float32, np.float32, False),
-                              (np.Float32, np.float64, False),
+                              (np.float32, np.uint8, True),
+                              (np.float32, np.int8, True),
+                              (np.float32, np.uint16, True),
+                              (np.float32, np.int16, True),
+                              (np.float32, np.float32, False),
+                              (np.float32, np.float64, False),
 
-                              (np.Float64, np.uint8, True),
-                              (np.Float64, np.int8, True),
-                              (np.Float64, np.uint16, True),
-                              (np.Float64, np.int16, True),
-                              (np.Float64, np.float32, True),
-                              (np.Float64, np.float64, False),
+                              (np.float64, np.uint8, True),
+                              (np.float64, np.int8, True),
+                              (np.float64, np.uint16, True),
+                              (np.float64, np.int16, True),
+                              (np.float64, np.float32, True),
+                              (np.float64, np.float64, False),
 
                               (np.bool, np.uint8, False),
                               (np.bool, np.int8, False),
@@ -178,7 +179,7 @@ def test_check_precision_loss():
 
     for (dtype_in, dtype_out, expected_value) in dtype_pairs_conversion:
         assert check_precision_loss(
-            dtype_in, dtype_out, output_warning=False) == expected_value
+            dtype_in, dtype_out, issue_warnings=False) == expected_value
 
-    assert check_precision_loss(dtype.uint8, dtype.uint8,
-                                output_warning=False, int_same_size_lossy=True)
+    assert check_precision_loss(np.uint8, np.uint8,
+                                issue_warnings=False, int_same_size_lossy=True)
