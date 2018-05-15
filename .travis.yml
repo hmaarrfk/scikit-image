@@ -20,7 +20,7 @@ addons:
     - texlive
     - texlive-latex-extra
     - dvipng
-    - python-qt4
+    # - python-qt4
     # - python3-qt4
     # - python3-qt5
     # - python3-pyside
@@ -40,43 +40,25 @@ notifications:
 
 matrix:
   include:
-    # 2.7 build (until 0.14 is release)
-    - os: linux
-      python: 2.7
-      env: PIP_FLAGS="--pre"
-    - os: linux
-      python: 2.7
-      env: WITH_PYAMG=1 QT=PyQt4
-      # Examples need strange versions of Matplotlib and Qt
-      # I don't think we should be increasing the minimum version requirement
-      # Because somebody is using fancy plotting in an example
-    - os: linux
-      python: 2.7
-      env: MINIMUM_REQUIREMENTS=1 TEST_EXAMPLES=0
     - os: linux
       python: 3.4
-      env: OPTIONAL_DEPS=1
+      env: TEST_EXAMPLES=0
     - os: linux
-      python: 3.5
+      python: 3.4
+      env: TEST_EXAMPLES=0
     - os: linux
-      python: 3.5
-      env: PIP_FLAGS="--pre"
+      python: 3.4
+      env: TEST_EXAMPLES=0
+    - os: linux
+      python: 3.4
+      env: TEST_EXAMPLES=0
+    - os: linux
+      python: 3.4
+      env: TEST_EXAMPLES=0
     - os: linux
       python: 3.6
-      env: BUILD_DOCS=1 DEPLOY_DOCS=1
-    # Test the Qt stuff
-    - os: linux
-      python: 3.6
-      env: QT=PyQt5
-      # Add PySide2 when it is finally released
-    - os: linux
-      python: 3.6
-      env: QT=PyQt5 WITH_PYAMG=1 OPTIONAL_DEPS=1
-    - os: osx
-      osx_image: xcode9
-      language: objective-c
-      # OS X has a hard time installing the docs dependencies
-      env: TRAVIS_PYTHON_VERSION=3.5 TEST_EXAMPLES=0
+      env: TEST_EXAMPLES=0
+
 
 before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
@@ -124,7 +106,7 @@ script:
       fi
     # Show what's installed
     - pip list
-    - pytest ${TEST_ARGS} skimage
+    - pytest ${TEST_ARGS} skimage/restoration/tests/test_unwrap.py
     # Run example applications
     - echo Build or run examples
     - |
