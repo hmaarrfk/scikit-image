@@ -127,7 +127,7 @@ def test_check_precision_loss():
                               (np.uint8, np.float32, False),
                               (np.uint8, np.float64, False),
 
-                              (np.int8, np.uint8, False),
+                              (np.int8, np.uint8, True),
                               (np.int8, np.int8, False),
                               (np.int8, np.uint16, False),
                               (np.int8, np.int16, False),
@@ -136,7 +136,7 @@ def test_check_precision_loss():
 
                               (np.int16, np.uint8, True),
                               (np.int16, np.int8, True),
-                              (np.int16, np.uint16, False),
+                              (np.int16, np.uint16, True),
                               (np.int16, np.int16, False),
                               (np.int16, np.float32, False),
                               (np.int16, np.float64, False),
@@ -180,6 +180,3 @@ def test_check_precision_loss():
     for (dtype_in, dtype_out, expected_value) in dtype_pairs_conversion:
         assert check_precision_loss(
             dtype_in, dtype_out, issue_warnings=False) == expected_value
-
-    assert check_precision_loss(np.uint8, np.uint8,
-                                issue_warnings=False, int_same_size_lossy=True)
