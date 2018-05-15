@@ -3,6 +3,7 @@ import numpy as np
 from skimage.draw import random_shapes
 
 from skimage._shared import testing
+from skimage._shared.testing import expected_warnings
 
 
 def test_generates_color_images_with_correct_shape():
@@ -119,8 +120,9 @@ def test_throws_when_min_pixel_intensity_out_of_range():
 
 def test_returns_empty_labels_and_white_image_when_cannot_fit_shape():
     # The circle will never fit this.
-    image, labels = random_shapes(
-        (10000, 10000), max_shapes=1, min_size=10000, shape='circle')
+    with expected_warnings(['Could not fit any shapes to image']):
+        image, labels = random_shapes(
+            (10000, 10000), max_shapes=1, min_size=10000, shape='circle')
     assert len(labels) == 0
     assert (image == 255).all()
 
