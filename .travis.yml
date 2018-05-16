@@ -45,7 +45,7 @@ matrix:
             - [python-qt4]
     - os: linux
       python: 3.6
-      env: QT=PyQt5 WITH_PYAMG=1 OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
+      env: QT=PyQt5 WITH_PYAMG=1 OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1 CHECK_SDIST=1
       addons:
           apt:
               packages:
@@ -63,7 +63,10 @@ before_install:
     - source tools/travis/before_install.sh
     - which python; python --version
     - tools/build_versions.py
-    - tools/check_sdist.py
+    - |
+      if [[ "${CHECK_SDIST}" == "1" ]]; then
+        tools/check_sdist.py
+      fi
 
 install:
     - python setup.py develop
@@ -89,8 +92,11 @@ install:
 
 script:
     - export PY=${TRAVIS_PYTHON_VERSION}
+    - echo "travis_fold:start:flake9 folding starts"
     - flake8 --exit-zero --exclude=test_*,six.py skimage doc/examples viewer_examples
+    - echo "travis_fold:start:flake9 folding ends"
     # run tests again with optional dependencies to get more coverage
+    - echo "travis_fold:start:pytest folding starts"
     - |
       if [[ "$OPTIONAL_DEPS" == "1" ]]; then
         export TEST_ARGS="${TEST_ARGS} --cov=skimage"
@@ -98,7 +104,9 @@ script:
     # Show what's installed
     - pip list
     - pytest ${TEST_ARGS} skimage
+    - echo "travis_fold:start:pytest folding ends"
     # Run example applications
+    - echo "travis_fold:start:examples folding starts"
     - echo Build or run examples
     - |
       if [[ "${BUILD_DOCS}" == "1" ]]; then
@@ -117,6 +125,7 @@ script:
         done
         mv $MPL_DIR/matplotlibrc_backup $MPL_DIR/matplotlibrc
       fi
+    - echo "travis_fold:start:examples folding ends"
 
 after_success:
     - codecov
