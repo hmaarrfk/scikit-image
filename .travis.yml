@@ -17,10 +17,6 @@ addons:
   apt:
     packages:
     - ccache
-    - texlive
-    - texlive-latex-extra
-    - dvipng
-    - python-qt4
     # - python3-qt4
     # - python3-qt5
     # - python3-pyside
@@ -41,8 +37,19 @@ notifications:
 matrix:
   include:
     - os: linux
+      python: 2.7
+      env: QT=PyQt4
+      addons:
+        apt:
+          packages:
+            - python-qt4
+    - os: linux
       python: 3.6
       env: QT=PyQt5 WITH_PYAMG=1 OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
+      addons:
+          apt:
+              packages:
+                - texlive, texlive-latex-extra, dvipng
 
 before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
