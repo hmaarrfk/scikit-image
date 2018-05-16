@@ -5,6 +5,7 @@ import itertools
 from skimage import (img_as_int, img_as_float,
                      img_as_uint, img_as_ubyte)
 from skimage.util.dtype import convert
+from skimage.util.dtype import _check_precision_loss as check_precision_loss
 
 from skimage._shared._warnings import expected_warnings
 from skimage._shared import testing
@@ -90,10 +91,12 @@ def test_downcast():
 def test_float_out_of_range():
     too_high = np.array([2], dtype=np.float32)
     with testing.raises(ValueError):
-        img_as_int(too_high)
+        with expected_warnings('precision loss'):
+            img_as_int(too_high)
     too_low = np.array([-2], dtype=np.float32)
     with testing.raises(ValueError):
-        img_as_int(too_low)
+        with expected_warnings('precision loss'):
+            img_as_int(too_low)
 
 
 def test_copy():
@@ -136,3 +139,65 @@ def test_clobber():
                 img_out = func_output_type(img_in)
 
             assert_equal(img_in, img_in_before)
+
+def test_check_precision_loss():
+    dtype_pairs_conversion = [(np.uint8, np.uint8, False),
+                              (np.uint8, np.int8, True),
+                              (np.uint8, np.uint16, False),
+                              (np.uint8, np.int16, False),
+                              (np.uint8, np.float32, False),
+                              (np.uint8, np.float64, False),
+
+                              (np.int8, np.uint8, True),
+                              (np.int8, np.int8, False),
+                              (np.int8, np.uint16, False),
+                              (np.int8, np.int16, False),
+                              (np.int8, np.float32, False),
+                              (np.int8, np.float64, False),
+
+                              (np.int16, np.uint8, True),
+                              (np.int16, np.int8, True),
+                              (np.int16, np.uint16, True),
+                              (np.int16, np.int16, False),
+                              (np.int16, np.float32, False),
+                              (np.int16, np.float64, False),
+
+                              (np.uint16, np.uint8, True),
+                              (np.uint16, np.int8, True),
+                              (np.uint16, np.uint16, False),
+                              (np.uint16, np.int16, True),
+                              (np.uint16, np.float32, False),
+                              (np.uint16, np.float64, False),
+
+                              (np.float32, np.uint8, True),
+                              (np.float32, np.int8, True),
+                              (np.float32, np.uint16, True),
+                              (np.float32, np.int16, True),
+                              (np.float32, np.float32, False),
+                              (np.float32, np.float64, False),
+
+                              (np.float64, np.uint8, True),
+                              (np.float64, np.int8, True),
+                              (np.float64, np.uint16, True),
+                              (np.float64, np.int16, True),
+                              (np.float64, np.float32, True),
+                              (np.float64, np.float64, False),
+
+                              (np.bool, np.uint8, False),
+                              (np.bool, np.int8, False),
+                              (np.bool, np.uint16, False),
+                              (np.bool, np.int16, False),
+                              (np.bool, np.float32, False),
+                              (np.bool, np.float64, False),
+
+                              (np.uint8, np.bool, True),
+                              (np.int8, np.bool, True),
+                              (np.uint16, np.bool, True),
+                              (np.int16, np.bool, True),
+                              (np.float32, np.bool, True),
+                              (np.float64, np.bool, True),
+                              ]
+
+    for (dtype_in, dtype_out, expected_value) in dtype_pairs_conversion:
+        assert check_precision_loss(
+            dtype_in, dtype_out, issue_warnings=False) == expected_value
