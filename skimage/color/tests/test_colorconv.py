@@ -598,7 +598,8 @@ def test_bayer2rgb():
     # edge case 2x2 pixel containing only "one" super pixel
     # grbg
     expected_color_image = np.empty(
-        (*bayer_image.shape, 3), dtype=bayer_image.dtype)
+        (bayer_image.shape[0], bayer_image.shape[1], 3),
+        dtype=bayer_image.dtype)
     expected_color_image[:, :, 0] = bayer_image[0, 1]
     expected_color_image[:, :, 2] = bayer_image[1, 0]
     expected_color_image[:, :, 1] = (bayer_image[0, 0] + bayer_image[1, 1]) / 2
