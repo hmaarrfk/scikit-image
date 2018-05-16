@@ -89,10 +89,12 @@ def test_downcast():
 def test_float_out_of_range():
     too_high = np.array([2], dtype=np.float32)
     with testing.raises(ValueError):
-        img_as_int(too_high)
+        with expected_warnings('precision loss'):
+            img_as_int(too_high)
     too_low = np.array([-2], dtype=np.float32)
     with testing.raises(ValueError):
-        img_as_int(too_low)
+        with expected_warnings('precision loss'):
+            img_as_int(too_low)
 
 
 def test_copy():
