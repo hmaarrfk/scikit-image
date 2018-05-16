@@ -681,7 +681,8 @@ class ProjectiveTransform(GeometricTransform):
                 tform = self.__class__
             else:
                 tform = ProjectiveTransform
-            return tform(matrix=self.params @ other.params)
+            # 2.7 compatibility
+            return tform(matrix=self.params.__matmul__(other.params))
         else:
             raise TypeError("Cannot combine transformations of differing "
                             "types.")
