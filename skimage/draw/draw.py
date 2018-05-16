@@ -853,7 +853,7 @@ def rectangle_perimeter(start, end=None, extent=None, shape=None, clip=False):
     return polygon_perimeter(r, c, shape=shape, clip=clip)
 
 
-def _rectangle_bounds(*, start, end, extent):
+def _rectangle_bounds(start, end=None, extent=None):
     if end is None and extent is None:
         raise ValueError("Either `end` or `extent` must be given.")
     if end is not None and extent is not None:
