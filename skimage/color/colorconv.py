@@ -1955,7 +1955,8 @@ def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
     else:
         if dtype is None:
             dtype = raw_image.dtype
-        output = np.zeros((*raw_image.shape, 3), dtype=dtype)
+        output = np.zeros((raw_image.shape[0], raw_image.shape[1], 3),
+                          dtype=dtype)
 
     K_green = np.array([[0, 1, 0],
                         [1, 4, 1],
@@ -2098,7 +2099,8 @@ def bayer2rgb(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
                          int_same_size_lossy=True)
 
     # Allocate a C continuous array
-    color_image = np.zeros((*raw_image.shape, 3), dtype=dtype)
+    color_image = np.zeros((raw_image.shape[0], raw_image.shape[1], 3),
+                           dtype=dtype)
 
     # These functions are defined so as to allow floating pointers to use
     # True divide, while allowing integer types to floor divide and then
@@ -2288,7 +2290,8 @@ def bayer2rgb_redux(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
             return array1 // 2 + array2 // 2
 
     # Allocate a C continuous array
-    color_image = np.zeros((*raw_image.shape, 3), dtype=dtype)
+    color_image = np.zeros((raw_image.shape[0], raw_image.shape[1], 3),
+                           dtype=dtype)
 
     red = color_image[:, :, 0]
     green = color_image[:, :, 1]
