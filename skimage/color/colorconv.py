@@ -2285,7 +2285,7 @@ def bayer2rgb_redux(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
         # Each line here is on the same cache line
         # Adjacent pixels
         uniform_filter1d(rb[::2, ::2], size=2, origin=-1, output=rb[::2, 1::2])  # noqa
-        uniform_filter1d(rb[::2, :],   size=2, axis=0, origin=-1, output=rb[1::2, :])  # noqa
+        uniform_filter1d(rb[::2, :], size=2, axis=0, origin=-1, output=rb[1::2, :])  # noqa
 
     def infill_red_or_blue_01(rb):
         rb[0::2, 1::2] = convert(raw_image[0::2, 1::2], dtype=dtype)
@@ -2295,12 +2295,12 @@ def bayer2rgb_redux(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     def infill_red_or_blue_10(rb):
         rb[1::2, 0::2] = convert(raw_image[1::2, 0::2], dtype=dtype)
         uniform_filter1d(rb[1::2, ::2], size=2, axis=1, origin=-1, output=rb[1::2, 1::2])  # noqa
-        uniform_filter1d(rb[1::2, :],   size=2, axis=0, origin=0, output=rb[::2, :])  # noqa
+        uniform_filter1d(rb[1::2, :], size=2, axis=0, origin=0, output=rb[::2, :])  # noqa
 
     def infill_red_or_blue_11(rb):
         rb[1::2, 1::2] = convert(raw_image[1::2, 1::2], dtype=dtype)
         uniform_filter1d(rb[1::2, 1::2], size=2, axis=1, origin=0, output=rb[1::2, 0::2])  # noqa
-        uniform_filter1d(rb[1::2, :],    size=2, axis=0, origin=0, output=rb[::2, :])  # noqa
+        uniform_filter1d(rb[1::2, :], size=2, axis=0, origin=0, output=rb[::2, :])  # noqa
 
     if bayer_pattern[0] == 'r':
         infill_red_or_blue_00(red)
