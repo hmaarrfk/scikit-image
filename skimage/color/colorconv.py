@@ -1889,7 +1889,7 @@ def ydbdr2rgb(ydbdr):
 
 def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
                     output=None):
-    """
+    bayer2rgb_naive.__doc__ = """
     This performs horribly
 
     import numpy as np
@@ -1916,9 +1916,7 @@ def bayer2rgb_naive(raw_image, bayer_pattern=['rg', 'gb'], dtype=None,
     uint8
     622 ms ± 7.07 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     188 ms ± 2.47 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-    """
-
-    bayer2rgb_naive.__doc__ += bayer2rgb.__doc__
+    """ + bayer2rgb.__doc__
 
     from scipy.ndimage import convolve
     from ..util.dtype import convert
@@ -2322,15 +2320,14 @@ def bayer2rgb_redux(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
     elif bayer_pattern[3] == 'b':
         infill_red_or_blue_11(blue)
 
-
     if bayer_pattern[0] == 'g':
         green[::2, ::2] = convert(raw_image[0::2, 0::2], dtype=dtype)
         green[1::2, 1::2] = convert(raw_image[1::2, 1::2], dtype=dtype)
-        g01_from_00 = uniform_filter1d(green[::2, ::2], size=2, axis=1, origin=-1)
-        g01_from_11 = uniform_filter1d(green[1::2, 1::2], size=2, axis=0, origin=0)
+        g01_from_00 = uniform_filter1d(green[::2, ::2], size=2, axis=1, origin=-1)  # noqa
+        g01_from_11 = uniform_filter1d(green[1::2, 1::2], size=2, axis=0, origin=0)  # noqa
 
-        g10_from_00 = uniform_filter1d(green[::2, ::2], size=2, axis=0, origin=-1)
-        g10_from_11 = uniform_filter1d(green[1::2, 1::2], size=2, axis=1, origin=0)
+        g10_from_00 = uniform_filter1d(green[::2, ::2], size=2, axis=0, origin=-1)  # noqa
+        g10_from_11 = uniform_filter1d(green[1::2, 1::2], size=2, axis=1, origin=0)  # noqa
 
         green[::2, 1::2] = add_divide_by_2(g01_from_00, g01_from_11)
         green[1::2, ::2] = add_divide_by_2(g10_from_00, g10_from_11)
@@ -2338,11 +2335,11 @@ def bayer2rgb_redux(raw_image, bayer_pattern=['rg', 'gb'], dtype=None):
         green[1::2, ::2] = convert(raw_image[1::2, 0::2], dtype=dtype)
         green[::2, 1::2] = convert(raw_image[0::2, 1::2], dtype=dtype)
 
-        g00_from_01 = uniform_filter1d(green[::2, 1::2], size=2, axis=1, origin=0)
-        g00_from_10 = uniform_filter1d(green[1::2, ::2], size=2, axis=0, origin=0)
+        g00_from_01 = uniform_filter1d(green[::2, 1::2], size=2, axis=1, origin=0)  # noqa
+        g00_from_10 = uniform_filter1d(green[1::2, ::2], size=2, axis=0, origin=0)  # noqa
 
-        g11_from_01 = uniform_filter1d(green[::2, 1::2], size=2, axis=0, origin=-1)
-        g11_from_10 = uniform_filter1d(green[1::2, ::2], size=2, axis=1, origin=-1)
+        g11_from_01 = uniform_filter1d(green[::2, 1::2], size=2, axis=0, origin=-1)  # noqa
+        g11_from_10 = uniform_filter1d(green[1::2, ::2], size=2, axis=1, origin=-1)  # noqa
 
         green[0::2, 0::2] = add_divide_by_2(g00_from_10, g00_from_01)
         green[1::2, 1::2] = add_divide_by_2(g11_from_10, g11_from_01)
