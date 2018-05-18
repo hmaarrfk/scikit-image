@@ -5,6 +5,7 @@ from skimage._shared._warnings import expected_warnings
 from skimage._shared import testing
 import pytest
 
+
 # older versions of scipy raise a warning with new NumPy because they use
 # numpy.rank() instead of arr.ndim or numpy.linalg.matrix_rank.
 SCIPY_EXPECTED = 'numpy.linalg.matrix_rank|\A\Z'
@@ -223,7 +224,9 @@ def test_spacing_0():
     # Rescale `data` along Z axis
     data_aniso = np.zeros((n, n, n // 2))
     for i, yz in enumerate(data):
-        data_aniso[i, :, :] = resize(yz, (n, n // 2))
+        data_aniso[i, :, :] = resize(yz, (n, n // 2),
+                                     mode='constant',
+                                     anti_aliasing=False)
 
     # Generate new labels
     small_l = int(lx // 5)
@@ -236,7 +239,7 @@ def test_spacing_0():
     # Test with `spacing` kwarg
     with expected_warnings(['"cg" mode' + '|' + SCIPY_EXPECTED]):
         labels_aniso = random_walker(data_aniso, labels_aniso, mode='cg',
-                                 spacing=(1., 1., 0.5))
+                                     spacing=(1., 1., 0.5))
 
     assert (labels_aniso[13:17, 13:17, 7:9] == 2).all()
 
@@ -251,7 +254,9 @@ def test_spacing_1():
     # `resize` is not yet 3D capable, so this must be done by looping in 2D.
     data_aniso = np.zeros((n, n * 2, n))
     for i, yz in enumerate(data):
-        data_aniso[i, :, :] = resize(yz, (n * 2, n))
+        data_aniso[i, :, :] = resize(yz, (n * 2, n),
+                                     mode='constant',
+                                     anti_aliasing=False)
 
     # Generate new labels
     small_l = int(lx // 5)
@@ -272,7 +277,9 @@ def test_spacing_1():
     # `resize` is not yet 3D capable, so this must be done by looping in 2D.
     data_aniso = np.zeros((n, n * 2, n))
     for i in range(data.shape[1]):
-        data_aniso[i, :, :] = resize(data[:, 1, :], (n * 2, n))
+        data_aniso[i, :, :] = resize(data[:, 1, :], (n * 2, n),
+                                     mode='constant',
+                                     anti_aliasing=False)
 
     # Generate new labels
     small_l = int(lx // 5)
@@ -370,4 +377,3 @@ def test_isolated_seeds():
     res = random_walker(a, mask, return_full_prob=True)
     assert res[0, 1, 1] == 1
     assert res[1, 1, 1] == 0
-
