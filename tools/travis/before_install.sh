@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -ev
+#!/usr/bin/env bash -ex
 
 export PIP_DEFAULT_TIMEOUT=60
 
@@ -85,5 +84,3 @@ section_end () {
 export -f section
 export -f section_end
 export -f retry
-
-set +ex

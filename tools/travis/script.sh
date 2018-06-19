@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -ex
 # Fail on non-zero exit and echo the commands
-set -ev
 export PY=${TRAVIS_PYTHON_VERSION}
 
 # Matplotlib settings - do not show figures during doc examples
@@ -63,5 +62,3 @@ elif [[ "${TEST_EXAMPLES}" != "0" ]]; then
   mv $MPL_DIR/matplotlibrc_backup $MPL_DIR/matplotlibrc
 fi
 section_end "Tests.examples"
-
-set +ev
