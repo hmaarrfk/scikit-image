@@ -37,15 +37,15 @@ if __name__ == '__main__':
 
     installed_version = V(module.__version__)
 
-    source_lines = open('../skimage/__init__.py').readlines()
-    version = 'vUndefined'
-    for l in source_lines:
-        if l.startswith('__version__'):
-            source_version = V(l.split("'")[1])
-            break
+    # source_lines = open('../skimage/__init__.py').readlines()
+    # version = 'vUndefined'
+    # for l in source_lines:
+        # if l.startswith('__version__'):
+            # source_version = V(l.split("'")[1])
+            # break
 
-    if source_version != installed_version:
-        abort("Installed version does not match source version")
+    # if source_version != installed_version:
+    #    abort("Installed version does not match source version")
 
     outdir = 'source/api'
     docwriter = ApiDocWriter(package)
