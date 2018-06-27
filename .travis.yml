@@ -53,6 +53,8 @@ matrix:
       language: objective-c
       # OS X has a hard time installing the docs dependencies
       env: TRAVIS_PYTHON_VERSION=3.5
+  allow_failures:
+    - env: QT=PyQt5 WITH_PYAMG=1 OPTIONAL_DEPS=1 PIP_FLAGS="--pre"
 
 before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
