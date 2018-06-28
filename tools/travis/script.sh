@@ -55,6 +55,9 @@ echo Build or run examples
   pip install --retries 3 -q -r ./requirements/docs.txt
 # fi
 
+pip list
+tools/build_versions.py
+
 if [[ "${BUILD_DOCS}" == "1" ]]; then
   export SPHINXCACHE=${HOME}/.cache/sphinx
   make html
