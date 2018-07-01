@@ -70,6 +70,8 @@ Requirements
 
 Revisions
 ---------
+2018.06.01
+    Make doctests threadsafe (by Mark Harfouche)
 2017.01.12
     Read Zeiss SEM metadata.
     Read OME-TIFF with invalid references to external files.
@@ -246,12 +248,13 @@ References
 Examples
 --------
 >>> data = numpy.random.rand(5, 301, 219)
->>> imsave('temp.tif', data)
+>>> _, filename = tempfile.mkstemp(suffix='.tif')
+>>> imsave(filename', data)
 
->>> image = imread('temp.tif')
+>>> image = imread(filename)
 >>> numpy.testing.assert_array_equal(image, data)
 
->>> with TiffFile('temp.tif') as tif:
+>>> with TiffFile(filename) as tif:
 ...     images = tif.asarray()
 ...     for page in tif:
 ...         for tag in page.tags.values():
@@ -329,7 +332,8 @@ def imsave(file, data, **kwargs):
     Examples
     --------
     >>> data = numpy.random.rand(2, 5, 3, 301, 219)
-    >>> imsave('temp.tif', data, compress=6, metadata={'axes': 'TZCYX'})
+    >>> _, filename = tempfile.mkstemp(suffix='.tif')
+    >>> imsave(filename, data, compress=6, metadata={'axes': 'TZCYX'})
 
     """
     tifargs = parse_kwargs(kwargs, 'append', 'bigtiff', 'byteorder',
@@ -352,7 +356,8 @@ class TiffWriter(object):
     Examples
     --------
     >>> data = numpy.random.rand(2, 5, 3, 301, 219)
-    >>> with TiffWriter('temp.tif', bigtiff=True) as tif:
+    >>> _, filename = tempfile.mkstemp(suffix='.tif')
+    >>> with TiffWriter(filename, bigtiff=True) as tif:
     ...     for i in range(data.shape[0]):
     ...         tif.save(data[i], compress=6)
 
@@ -1208,11 +1213,12 @@ def imread(files, **kwargs):
 
     Examples
     --------
-    >>> imsave('temp.tif', numpy.random.rand(3, 4, 301, 219))
-    >>> im = imread('temp.tif', key=0)
+    >>> _, filename = tempfile.mkstemp(suffix='.tif')
+    >>> imsave(filename, numpy.random.rand(3, 4, 301, 219))
+    >>> im = imread(filename, key=0)
     >>> im.shape
     (4, 301, 219)
-    >>> ims = imread(['temp.tif', 'temp.tif'])
+    >>> ims = imread([filename, filename])
     >>> ims.shape
     (2, 3, 4, 301, 219)
 
@@ -1272,7 +1278,8 @@ class TiffFile(object):
 
     Examples
     --------
-    >>> with TiffFile('temp.tif') as tif:
+    >>> _, filename = tempfile.mkstemp(suffix='.tif')
+    >>> with TiffFile(filename) as tif:
     ...     data = tif.asarray()
     ...     data.shape
     (5, 301, 219)
