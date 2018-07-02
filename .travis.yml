@@ -24,7 +24,10 @@ before_install:
   - source ~/multibuild/travis_steps.sh
   - before_install
 
-install: python -c 'import platform; print(platform.architecture())'
+install:
+  - ls -lah
+  - build_wheel . $PLAT
+
 
 script: python --version
 
