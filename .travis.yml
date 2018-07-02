@@ -43,7 +43,7 @@ matrix:
 
 before_install: python --version
 
-install: python --version
+install: python -c 'import platform; print(platform.architecture())'
 
 script: python --version
 
