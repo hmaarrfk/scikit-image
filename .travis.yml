@@ -7,24 +7,8 @@
 
 language: python
 sudo: false
-cache:
-  # See http://docs.travis-ci.com/user/caching/#pip-cache
-  directories:
-    - $HOME/.cache/pip
-    - $HOME/.cache/sphinx
-    - $HOME/.ccache
-addons:
-  apt:
-    packages:
-    - ccache
-    - texlive
-    - texlive-latex-extra
-    - dvipng
 
 env:
-  global:
-    - GH_REF: github.com/scikit-image/docs.git
-    - secure: "Z8uxAGrFb6yNw/savI7YvA5/BfkVKVGD3HUkDSXamotJAvUKMjIlWnzLc7d9S7PY99FRENgRYaNw4fzZqwJ91hDITcl1/wk6ux1j778O8kUQZayzdqcJG8KpfBsy1vJ4fl4uDGlSmUP413rR3R3dvvgJzIpCLy2qiQR/xujrGvs="
 
 notifications:
   webhooks:
