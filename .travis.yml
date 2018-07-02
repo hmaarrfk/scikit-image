@@ -6,7 +6,11 @@
 # See tools/travis/notes.txt for some guidelines
 
 language: python
-sudo: false
+sudo: required
+# Defaullt is 2.7
+python: 3.5
+services: docker
+
 
 matrix:
   include:
