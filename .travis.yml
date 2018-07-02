@@ -29,6 +29,10 @@ before_install:
   - before_install
 
 install:
+  - pwd
+  - ls -lah ~/multibuild
+  - ls -lah ~/
+  - echo $HOME
   - ls -lah
   - build_wheel . $PLAT
 
