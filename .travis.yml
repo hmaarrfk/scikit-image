@@ -14,8 +14,15 @@ matrix:
       env:
         - PLAT=i686
         - MB_PYTHON_VERSION=3.6
+env:
+  global:
+    - REPO_DIR="scikit-image"
 
-before_install: python --version
+before_install:
+  - git clone https://github.com/matthew-brett/multibuild ~/multibuild
+  - source ~/multibuild/common_utils.sh
+  - source ~/multibuild/travis_steps.sh
+  - before_install
 
 install: python -c 'import platform; print(platform.architecture())'
 
