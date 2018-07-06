@@ -30,6 +30,11 @@ Version 0.16
   arguments.
 * In ``skimage.morphology.remove_small_holes``, remove ``min_size`` argument.
 
+Version 0.17
+------------
+ * Think about deprecating the keyword argument ``return_type`` in
+   ``rectangular_grid``.
+
 Other
 -----
 * Remove legacy pretty printing workaround for ``pytest`` in ``conftest.py``

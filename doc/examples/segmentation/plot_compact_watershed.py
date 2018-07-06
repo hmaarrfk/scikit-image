@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 coins = data.coins()
 edges = filters.sobel(coins)
 
-grid = util.regular_grid(coins.shape, n_points=468)
+grid = util.regular_grid(coins.shape, n_points=468, return_type='tuple')
 
 seeds = np.zeros(coins.shape, dtype=int)
 seeds[grid] = np.arange(seeds[grid].size).reshape(seeds[grid].shape) + 1
