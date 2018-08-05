@@ -18,6 +18,22 @@ URL = 'http://scikit-image.org'
 LICENSE = 'Modified BSD'
 DOWNLOAD_URL = 'http://github.com/scikit-image/scikit-image'
 
+classifiers=[
+    'Development Status :: 4 - Beta',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: C',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Topic :: Scientific/Engineering',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+]
+
 import os
 import sys
 
@@ -129,21 +145,7 @@ if __name__ == "__main__":
         download_url=DOWNLOAD_URL,
         version=VERSION,
 
-        classifiers=[
-            'Development Status :: 4 - Beta',
-            'Environment :: Console',
-            'Intended Audience :: Developers',
-            'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: BSD License',
-            'Programming Language :: C',
-            'Programming Language :: Python',
-            'Programming Language :: Python :: 3',
-            'Topic :: Scientific/Engineering',
-            'Operating System :: Microsoft :: Windows',
-            'Operating System :: POSIX',
-            'Operating System :: Unix',
-            'Operating System :: MacOS',
-        ],
+        classifiers=classifiers,
         install_requires=INSTALL_REQUIRES,
         requires=REQUIRES,
         python_requires='>=3.5',
