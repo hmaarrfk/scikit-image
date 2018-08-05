@@ -10,7 +10,6 @@ def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration, get_numpy_include_dirs
 
     config = Configuration('measure', parent_package, top_path)
-    config.add_data_dir('tests')
 
     cython(['_ccomp.pyx'], working_path=base_path)
     cython(['_find_contours_cy.pyx'], working_path=base_path)
