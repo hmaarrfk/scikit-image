@@ -41,10 +41,9 @@ cdef inline Py_ssize_t Py_ssize_t_min(Py_ssize_t value1, Py_ssize_t value2):
         return value2
 
 
-def _denoise_bilateral(image, Py_ssize_t win_size, sigma_color, np_floats sigma_spatial,
-                       Py_ssize_t bins, mode, np_floats cval,
-                       np_floats[:] color_lut, np_floats[:] range_lut,
-                       np_floats[:, :, ::1] out, np_floats[:] empty_dims):
+def _denoise_bilateral(image, Py_ssize_t win_size, np_floats sigma_color,
+                       np_floats sigma_spatial, Py_ssize_t bins, mode,
+                       np_floats cval, color_lut, range_lut, out, empty_dims):
     cdef:
         np_floats max_value
         Py_ssize_t rows = image.shape[0]

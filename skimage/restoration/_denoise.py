@@ -141,7 +141,7 @@ def denoise_bilateral(image, win_size=None, sigma_color=None, sigma_spatial=1,
 
     sigma_color = sigma_color or image.std()
 
-    color_lut = _compute_color_lut(bins, sigma_color, image.dtype)
+    color_lut = _compute_color_lut(bins, sigma_color, max_value, image.dtype)
 
     range_lut = np.empty(win_size * win_size, dtype=image.dtype)
 
@@ -152,7 +152,7 @@ def denoise_bilateral(image, win_size=None, sigma_color=None, sigma_spatial=1,
     empty_dims = np.empty(dims, dtype=image.dtype)
 
     return _denoise_bilateral(image, win_size, sigma_color, sigma_spatial,
-                              bins, mode, cval, color_lut, range_lut, cimage,
+                              bins, mode, cval, color_lut, range_lut,
                               out, empty_dims)
 
 
@@ -200,6 +200,8 @@ def denoise_tv_bregman(image, weight, max_iter=100, eps=1e-3, isotropic=True):
     .. [4] https://web.math.ucsb.edu/~cgarcia/UGProjects/BregmanAlgorithms_JacquelineBush.pdf
 
     """
+    image = np.atleast_3d(img_as_float(image))
+
     rows = image.shape[0]
     cols = image.shape[1]
     dims = image.shape[2]
@@ -207,8 +209,6 @@ def denoise_tv_bregman(image, weight, max_iter=100, eps=1e-3, isotropic=True):
     shape_ext = (rows + 2, cols + 2, dims)
 
     out = np.zeros(shape_ext, image.dtype)
-
-    image = np.atleast_3d(img_as_float(image))
 
     return _denoise_tv_bregman(image, weight, max_iter, eps, isotropic, out)
 
