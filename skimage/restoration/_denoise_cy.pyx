@@ -9,32 +9,15 @@ from libc.math cimport exp, fabs, sqrt
 from libc.float cimport DBL_MAX
 from .._shared.interpolation cimport get_pixel3d
 from .._shared.fused_numerics cimport np_floats
-from ..util import img_as_float
 
 
-cdef inline np_floats _gaussian_weight(np_floats sigma_sqr, np_floats value):
+cdef np_floats _gaussian_weight(np_floats sigma_sqr, np_floats value):
     return exp(-0.5 * value * value / sigma_sqr)
 
 
-cdef np_floats[:] _compute_color_lut(Py_ssize_t bins, np_floats sigma, np_floats max_value):
+cdef np_floats[:] _compute_range_lut(Py_ssize_t win_size, np_floats sigma, np_floats[:] range_lut):
 
     cdef:
-        np_floats[:] color_lut = np.empty(bins, dtype=np.double)
-        Py_ssize_t b
-
-    sigma *= sigma
-    max_value /= bins
-
-    for b in range(bins):
-        color_lut[b] = _gaussian_weight(sigma, b * max_value)
-
-    return color_lut
-
-
-cdef np_floats[:] _compute_range_lut(Py_ssize_t win_size, np_floats sigma):
-
-    cdef:
-        np_floats[:] range_lut = np.empty(win_size*win_size, dtype=np.double)
         Py_ssize_t kr, kc, dr, dc
         Py_ssize_t window_ext = (win_size - 1) / 2
         np_floats dist
@@ -58,41 +41,17 @@ cdef inline Py_ssize_t Py_ssize_t_min(Py_ssize_t value1, Py_ssize_t value2):
         return value2
 
 
-def _denoise_bilateral(image, Py_ssize_t win_size, sigma_color,
-                      np_floats sigma_spatial, Py_ssize_t bins,
-                      mode, np_floats cval):
+def _denoise_bilateral(image, Py_ssize_t win_size, sigma_color, np_floats sigma_spatial,
+                       Py_ssize_t bins, mode, np_floats cval,
+                       np_floats[:] color_lut, np_floats[:] range_lut,
+                       np_floats[:, :, ::1] out, np_floats[:] empty_dims):
     cdef:
-        np_floats min_value, max_value
-
-    min_value = image.min()
-    max_value = image.max()
-
-    if min_value == max_value:
-        return image
-
-    # if image.max() is 0, then dist_scale can have an unverified value
-    # and color_lut[<int>(dist * dist_scale)] may cause a segmentation fault
-    # so we verify we have a positive image and that the max is not 0.0.
-    if min_value < 0.0:
-        raise ValueError("Image must contain only positive values")
-
-    if max_value == 0.0:
-        raise ValueError("The maximum value found in the image was 0.")
-
-    image = np.atleast_3d(img_as_float(image))
-
-    cdef:
+        np_floats max_value
         Py_ssize_t rows = image.shape[0]
         Py_ssize_t cols = image.shape[1]
         Py_ssize_t dims = image.shape[2]
         Py_ssize_t window_ext = (win_size - 1) / 2
         Py_ssize_t max_color_lut_bin = bins - 1
-
-        np_floats[:, :, ::1] cimage
-        np_floats[:, :, ::1] out
-
-        np_floats[:] color_lut
-        np_floats[:] range_lut
 
         Py_ssize_t r, c, d, wr, wc, kr, kc, rr, cc, pixel_addr, color_lut_bin
         np_floats value, weight, dist, total_weight, csigma_color, color_weight, \
@@ -101,6 +60,10 @@ def _denoise_bilateral(image, Py_ssize_t win_size, sigma_color,
         np_floats[:] values
         np_floats[:] centres
         np_floats[:] total_values
+
+        np_floats[:, :, ::1] cimage
+
+    max_value = image.max()
 
     if sigma_color is None:
         csigma_color = image.std()
@@ -114,13 +77,10 @@ def _denoise_bilateral(image, Py_ssize_t win_size, sigma_color,
 
     cimage = np.ascontiguousarray(image)
 
-    out = np.zeros((rows, cols, dims), dtype=np.double)
-    color_lut = _compute_color_lut(bins, csigma_color, max_value)
-    range_lut = _compute_range_lut(win_size, sigma_spatial)
     dist_scale = bins / dims / max_value
-    values = np.empty(dims, dtype=np.double)
-    centres = np.empty(dims, dtype=np.double)
-    total_values = np.empty(dims, dtype=np.double)
+    values = empty_dims.copy()
+    centres = empty_dims.copy()
+    total_values = empty_dims.copy()
 
     for r in range(rows):
         for c in range(cols):
@@ -163,9 +123,7 @@ def _denoise_bilateral(image, Py_ssize_t win_size, sigma_color,
 
 
 def _denoise_tv_bregman(image, np_floats weight, int max_iter, np_floats eps,
-                       char isotropic):
-    image = np.atleast_3d(img_as_float(image))
-
+                       char isotropic, np_floats[:, :, ::1] out):
     cdef:
         Py_ssize_t rows = image.shape[0]
         Py_ssize_t cols = image.shape[1]
@@ -177,16 +135,16 @@ def _denoise_tv_bregman(image, np_floats weight, int max_iter, np_floats eps,
         Py_ssize_t total = rows * cols * dims
 
     shape_ext = (rows2, cols2, dims)
-    u = np.zeros(shape_ext, dtype=np.double)
+    u = out.copy()
 
     cdef:
         np_floats[:, :, ::1] cimage = np.ascontiguousarray(image)
         np_floats[:, :, ::1] cu = u
 
-        np_floats[:, :, ::1] dx = np.zeros(shape_ext, dtype=np.double)
-        np_floats[:, :, ::1] dy = np.zeros(shape_ext, dtype=np.double)
-        np_floats[:, :, ::1] bx = np.zeros(shape_ext, dtype=np.double)
-        np_floats[:, :, ::1] by = np.zeros(shape_ext, dtype=np.double)
+        np_floats[:, :, ::1] dx = out.copy()
+        np_floats[:, :, ::1] dy = out.copy()
+        np_floats[:, :, ::1] bx = out.copy()
+        np_floats[:, :, ::1] by = out.copy()
 
         np_floats ux, uy, uprev, unew, bxx, byy, dxx, dyy, s, tx, ty
         int i = 0
