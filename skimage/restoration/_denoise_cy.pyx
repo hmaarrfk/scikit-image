@@ -11,7 +11,7 @@ from .._shared.interpolation cimport get_pixel3d
 from .._shared.fused_numerics cimport np_floats
 
 
-cdef np_floats _gaussian_weight(np_floats sigma_sqr, np_floats value):
+def _gaussian_weight(np_floats sigma_sqr, np_floats value):
     return exp(-0.5 * value * value / sigma_sqr)
 
 
