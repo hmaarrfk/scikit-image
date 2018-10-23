@@ -11,7 +11,7 @@ ctypedef fused dtype_t_out:
     double_t
 
 
-cdef void _core(void kernel(dtype_t_out*, Py_ssize_t, Py_ssize_t*, Py_ssize_t,
+cdef void _core(void kernel(dtype_t_out*, Py_ssize_t, Py_ssize_t[::1], Py_ssize_t,
                             dtype_t, Py_ssize_t, Py_ssize_t, double,
                             double, Py_ssize_t, Py_ssize_t) nogil,
                 dtype_t[:, ::1] image,
