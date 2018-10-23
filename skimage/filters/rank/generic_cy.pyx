@@ -363,8 +363,8 @@ cdef inline void _kernel_entropy(dtype_t_out* out, Py_ssize_t odepth,
         for i in range(max_bin):
             p = histo[i] / pop
             if p > 0:
-                e -= p * log(p) / 0.6931471805599453
-        out[0] = <dtype_t_out>e
+                e -= p * log(p)
+        out[0] = <dtype_t_out>(e * 1.442695040888963407359924681001892137)
     else:
         out[0] = <dtype_t_out>0
 

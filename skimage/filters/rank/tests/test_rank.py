@@ -459,38 +459,43 @@ class TestRank():
         selem = np.ones((16, 16), dtype=np.uint8)
         # 1 bit per pixel
         data = np.tile(np.asarray([0, 1]), (100, 100)).astype(np.uint8)
-        assert(np.max(rank.entropy(data, selem)) == 1)
-
+        assert_allclose(np.max(rank.entropy(data, selem)), 1,
+                         atol=0, rtol=1E-13)
         # 2 bit per pixel
         data = np.tile(np.asarray([[0, 1], [2, 3]]), (10, 10)).astype(np.uint8)
-        assert(np.max(rank.entropy(data, selem)) == 2)
-
+        assert_allclose(np.max(rank.entropy(data, selem)), 2,
+                         atol=0, rtol=1E-13)
         # 3 bit per pixel
         data = np.tile(
             np.asarray([[0, 1, 2, 3], [4, 5, 6, 7]]), (10, 10)).astype(np.uint8)
-        assert(np.max(rank.entropy(data, selem)) == 3)
+        assert_allclose(np.max(rank.entropy(data, selem)), 3,
+                         atol=0, rtol=1E-13)
 
         # 4 bit per pixel
         data = np.tile(
             np.reshape(np.arange(16), (4, 4)), (10, 10)).astype(np.uint8)
-        assert(np.max(rank.entropy(data, selem)) == 4)
+        assert_allclose(np.max(rank.entropy(data, selem)), 4,
+                         atol=0, rtol=1E-13)
 
         # 6 bit per pixel
         data = np.tile(
             np.reshape(np.arange(64), (8, 8)), (10, 10)).astype(np.uint8)
-        assert(np.max(rank.entropy(data, selem)) == 6)
+        assert_allclose(np.max(rank.entropy(data, selem)), 6,
+                         atol=0, rtol=1E-13)
 
         # 8-bit per pixel
         data = np.tile(
             np.reshape(np.arange(256), (16, 16)), (10, 10)).astype(np.uint8)
-        assert(np.max(rank.entropy(data, selem)) == 8)
+        assert_allclose(np.max(rank.entropy(data, selem)), 8,
+                         atol=0, rtol=1E-13)
 
         # 12 bit per pixel
         selem = np.ones((64, 64), dtype=np.uint8)
         data = np.zeros((65, 65), dtype=np.uint16)
         data[:64, :64] = np.reshape(np.arange(4096), (64, 64))
         with expected_warnings(['Bad rank filter performance']):
-            assert(np.max(rank.entropy(data, selem)) == 12)
+            assert_allclose(np.max(rank.entropy(data, selem)), 12,
+                             atol=0, rtol=1E-13)
 
         # make sure output is of dtype double
         with expected_warnings(['Bad rank filter performance']):
