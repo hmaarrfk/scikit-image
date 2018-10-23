@@ -41,7 +41,7 @@ cdef void _core(void kernel(dtype_t_out*, Py_ssize_t, Py_ssize_t*, double,
                 char[:, ::1] selem,
                 char[:, ::1] mask,
                 dtype_t_out[:, :, ::1] out,
-                signed char shift_x, signed char shift_y,
+                Py_ssize_t shift_x, Py_ssize_t shift_y,
                 double p0, double p1,
                 Py_ssize_t s0, Py_ssize_t s1,
                 Py_ssize_t max_bin) except *:
