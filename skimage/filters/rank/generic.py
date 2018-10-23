@@ -92,14 +92,15 @@ def _handle_input(image, selem, out, mask, out_dtype=None, pixel_size=1):
     is_8bit = image.dtype in (np.uint8, np.int8)
 
     if is_8bit:
-        max_bin = 255
+        max_bin = 256
     else:
-        max_bin = max(4, image.max())
+        # do the addition after the conversion to python to ensure
+        # wrap around of finite integer types doesn't happen
+        max_bin = max(3, image.max()) + 1
 
-    bitdepth = int(np.log2(max_bin))
-    if bitdepth > 10:
-        warn("Bitdepth of %d may result in bad rank filter "
-             "performance due to large number of bins." % bitdepth)
+    if max_bin > 2**10:
+        warn("Bad rank filter performance is expected due to a "
+             "large number of bins (number of bins = {})".format(max_bin))
 
     return image, selem, out, mask, max_bin
 
