@@ -1,6 +1,7 @@
 import os
 import numpy as np
-from skimage._shared.testing import assert_equal
+from skimage._shared.testing import (assert_equal, assert_array_equal,
+                                     assert_allclose)
 from skimage._shared import testing
 
 import skimage
@@ -9,96 +10,56 @@ from skimage import data, util, morphology
 from skimage.morphology import grey, disk
 from skimage.filters import rank
 from skimage._shared._warnings import expected_warnings
-from skimage._shared.testing import test_parallel, xfail, arch32
-
+from skimage._shared.testing import test_parallel, arch32, parametrize, xfail
+from pytest import param
 
 class TestRank():
     def setup(self):
         np.random.seed(0)
         # This image is used along with @test_parallel
         # to ensure that the same seed is used for each thread.
-        self.image = np.random.rand(25, 25)
+        with expected_warnings(['precision loss']):
+            self.image = img_as_ubyte(np.random.rand(25, 25))
         # Set again the seed for the other tests.
         np.random.seed(0)
+        self.selem = morphology.disk(1)
+        self.refs = np.load(os.path.join(skimage.data_dir, "rank_filter_tests.npz"))
 
-    @xfail(condition=arch32,
-           reason=('Known test failure on 32-bit platforms. See links for '
-                   'details: '
-                   'https://github.com/scikit-image/scikit-image/issues/3091 '
-                   'https://github.com/scikit-image/scikit-image/issues/2528'))
-    def test_all(self):
-        @test_parallel()
-        def check_all():
-            selem = morphology.disk(1)
-            refs = np.load(os.path.join(skimage.data_dir, "rank_filter_tests.npz"))
-
-            assert_equal(refs["autolevel"],
-                         rank.autolevel(self.image, selem))
-            assert_equal(refs["autolevel_percentile"],
-                         rank.autolevel_percentile(self.image, selem))
-            assert_equal(refs["bottomhat"],
-                         rank.bottomhat(self.image, selem))
-            assert_equal(refs["equalize"],
-                         rank.equalize(self.image, selem))
-            assert_equal(refs["gradient"],
-                         rank.gradient(self.image, selem))
-            assert_equal(refs["gradient_percentile"],
-                         rank.gradient_percentile(self.image, selem))
-            assert_equal(refs["maximum"],
-                         rank.maximum(self.image, selem))
-            assert_equal(refs["mean"],
-                         rank.mean(self.image, selem))
-            assert_equal(refs["geometric_mean"],
-                         rank.geometric_mean(self.image, selem)),
-            assert_equal(refs["mean_percentile"],
-                         rank.mean_percentile(self.image, selem))
-            assert_equal(refs["mean_bilateral"],
-                         rank.mean_bilateral(self.image, selem))
-            assert_equal(refs["subtract_mean"],
-                         rank.subtract_mean(self.image, selem))
-            assert_equal(refs["subtract_mean_percentile"],
-                         rank.subtract_mean_percentile(self.image, selem))
-            assert_equal(refs["median"],
-                         rank.median(self.image, selem))
-            assert_equal(refs["minimum"],
-                         rank.minimum(self.image, selem))
-            assert_equal(refs["modal"],
-                         rank.modal(self.image, selem))
-            assert_equal(refs["enhance_contrast"],
-                         rank.enhance_contrast(self.image, selem))
-            assert_equal(refs["enhance_contrast_percentile"],
-                         rank.enhance_contrast_percentile(self.image, selem))
-            assert_equal(refs["pop"],
-                         rank.pop(self.image, selem))
-            assert_equal(refs["pop_percentile"],
-                         rank.pop_percentile(self.image, selem))
-            assert_equal(refs["pop_bilateral"],
-                         rank.pop_bilateral(self.image, selem))
-            assert_equal(refs["sum"],
-                         rank.sum(self.image, selem))
-            assert_equal(refs["sum_bilateral"],
-                         rank.sum_bilateral(self.image, selem))
-            assert_equal(refs["sum_percentile"],
-                         rank.sum_percentile(self.image, selem))
-            assert_equal(refs["threshold"],
-                         rank.threshold(self.image, selem))
-            assert_equal(refs["threshold_percentile"],
-                         rank.threshold_percentile(self.image, selem))
-            assert_equal(refs["tophat"],
-                         rank.tophat(self.image, selem))
-            assert_equal(refs["noise_filter"],
-                         rank.noise_filter(self.image, selem))
-            assert_equal(refs["entropy"],
-                         rank.entropy(self.image, selem))
-            assert_equal(refs["otsu"],
-                         rank.otsu(self.image, selem))
-            assert_equal(refs["percentile"],
-                         rank.percentile(self.image, selem))
-            assert_equal(refs["windowed_histogram"],
-                         rank.windowed_histogram(self.image, selem))
-
-        with expected_warnings(['precision loss', r'non-integer|\A\Z']):
-            check_all()
+    @parametrize('filter',
+        ["autolevel", "autolevel_percentile", "bottomhat", "equalize",
+         "gradient", "gradient_percentile", "maximum", "mean",
+         "geometric_mean", "mean_percentile", "mean_bilateral",
+         "subtract_mean", "subtract_mean_percentile", "median", "minimum",
+         "modal", "enhance_contrast", "enhance_contrast_percentile", "pop",
+         "pop_percentile", "pop_bilateral", "sum", "sum_bilateral",
+         "sum_percentile", "threshold", "threshold_percentile",
+         "tophat", "noise_filter", "entropy",
+         param("otsu",
+               marks=xfail(
+                   condition=arch32,
+                   reason=('Known test failure on 32-bit platforms. '
+                           'See links for details: '
+                           'https://github.com/scikit-image/scikit-image/issues/3091 '
+                           'https://github.com/scikit-image/scikit-image/issues/2528'))),
+         "percentile",
+         param("windowed_histogram",
+               marks=xfail(
+                   reason=('Bug in the code that genreated the `correct` '
+                           'solution. See '
+                           'https://github.com/scikit-image/scikit-image/issues/3498')))
+       ])
+    @test_parallel()
+    def test_rank_filter(self, filter):
+        expected = self.refs[filter]
+        result = getattr(rank, filter)(self.image, self.selem)
+        if filter == "entropy":
+            # There may be some arch dependent rounding errors
+            # See the discussions in
+            # https://github.com/scikit-image/scikit-image/issues/3091
+            # https://github.com/scikit-image/scikit-image/issues/2528
+            assert_allclose(expected, result, atol=0, rtol=1E-15)
+        else:
+            assert_array_equal(expected, result)
 
     def test_random_sizes(self):
         # make sure the size is not a problem
