@@ -15,9 +15,8 @@ from pytest import param
 
 
 @xfail(
-    condition=arch32,
-    reason=('Known test failure on 32-bit platforms. '
-            'See links for details: '
+    reason=('Pathological edge case for OTSU. May fail depending on '
+            'compiler optimizations. See links for details: '
             'https://github.com/scikit-image/scikit-image/issues/3091 '
             'https://github.com/scikit-image/scikit-image/issues/2528'))
 def test_otsu_32bit_failer():
@@ -54,9 +53,7 @@ class TestRank():
          "tophat", "noise_filter", "entropy",
          param("otsu",
                marks=xfail(
-                   condition=arch32,
-                   reason=('Known test failure on 32-bit platforms. '
-                           'See links for details: '
+                   reason=('Known test failure. See links for details: '
                            'https://github.com/scikit-image/scikit-image/issues/3091 '
                            'https://github.com/scikit-image/scikit-image/issues/2528'))),
          "percentile",
