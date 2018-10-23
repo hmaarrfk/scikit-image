@@ -4,7 +4,7 @@
 #cython: wraparound=False
 
 cimport numpy as cnp
-from .core_cy cimport dtype_t, dtype_t_out, _core, _min, _max
+from .core_cy cimport dtype_t, dtype_t_out, _core
 
 
 cdef inline void _kernel_autolevel(dtype_t_out* out, Py_ssize_t odepth,
@@ -33,7 +33,7 @@ cdef inline void _kernel_autolevel(dtype_t_out* out, Py_ssize_t odepth,
 
         delta = imax - imin
         if delta > 0:
-            out[0] = <dtype_t_out>((max_bin - 1) * (_min(_max(imin, g), imax)
+            out[0] = <dtype_t_out>((max_bin - 1) * (min(max(imin, g), imax)
                                            - imin) / delta)
         else:
             out[0] = <dtype_t_out>(imax - imin)

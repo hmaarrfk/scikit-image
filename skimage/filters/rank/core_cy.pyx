@@ -9,14 +9,6 @@ cimport numpy as cnp
 from libc.stdlib cimport malloc, free
 
 
-cdef inline dtype_t _max(dtype_t a, dtype_t b) nogil:
-    return a if a >= b else b
-
-
-cdef inline dtype_t _min(dtype_t a, dtype_t b) nogil:
-    return a if a <= b else b
-
-
 cdef inline void histogram_increment(Py_ssize_t* histo, double* pop,
                                      dtype_t value) nogil:
     histo[value] += 1
