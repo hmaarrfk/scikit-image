@@ -13,6 +13,24 @@ from skimage._shared._warnings import expected_warnings
 from skimage._shared.testing import test_parallel, arch32, parametrize, xfail
 from pytest import param
 
+
+@xfail(
+    condition=arch32,
+    reason=('Known test failure on 32-bit platforms. '
+            'See links for details: '
+            'https://github.com/scikit-image/scikit-image/issues/3091 '
+            'https://github.com/scikit-image/scikit-image/issues/2528'))
+def test_otsu_32bit_failer():
+    img = np.array([[ 53,  41, 167],
+                    [ 30,  81, 106],
+                    [ 63, 147, 151]], dtype=np.uint8)
+    selem = np.array([[0, 1, 0],
+                      [1, 1, 1],
+                      [0, 1, 0]], dtype=np.uint8)
+    otsu = rank.otsu(img, selem)
+    assert otsu[1, 1] == 81
+
+
 class TestRank():
     def setup(self):
         np.random.seed(0)
