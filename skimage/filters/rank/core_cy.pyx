@@ -9,13 +9,13 @@ cimport numpy as cnp
 from libc.stdlib cimport malloc, free
 
 
-cdef inline void histogram_increment(Py_ssize_t* histo, double* pop,
+cdef inline void histogram_increment(Py_ssize_t* histo, Py_ssize_t* pop,
                                      dtype_t value) nogil:
     histo[value] += 1
     pop[0] += 1
 
 
-cdef inline void histogram_decrement(Py_ssize_t* histo, double* pop,
+cdef inline void histogram_decrement(Py_ssize_t* histo, Py_ssize_t* pop,
                                      dtype_t value) nogil:
     histo[value] -= 1
     pop[0] -= 1
@@ -34,7 +34,7 @@ cdef inline char is_in_mask(Py_ssize_t rows, Py_ssize_t cols,
             return 0
 
 
-cdef void _core(void kernel(dtype_t_out*, Py_ssize_t, Py_ssize_t*, double,
+cdef void _core(void kernel(dtype_t_out*, Py_ssize_t, Py_ssize_t*, Py_ssize_t,
                             dtype_t, Py_ssize_t, Py_ssize_t, double,
                             double, Py_ssize_t, Py_ssize_t) nogil,
                 dtype_t[:, ::1] image,
@@ -74,7 +74,7 @@ cdef void _core(void kernel(dtype_t_out*, Py_ssize_t, Py_ssize_t*, double,
     cdef Py_ssize_t r, c, rr, cc, s, value, local_max, i, even_row
 
     # number of pixels actually inside the neighborhood (double)
-    cdef double pop = 0
+    cdef Py_ssize_t pop = 0
 
     # the current local histogram distribution
     cdef Py_ssize_t* histo = <Py_ssize_t*>malloc(max_bin * sizeof(Py_ssize_t))

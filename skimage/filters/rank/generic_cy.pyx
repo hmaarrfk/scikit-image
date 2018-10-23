@@ -8,11 +8,11 @@ from libc.math cimport log, exp
 
 from .core_cy cimport dtype_t, dtype_t_out, _core
 
-from ..._shared.interpolation cimport round 
+from ..._shared.interpolation cimport round
 
 cdef inline void _kernel_autolevel(dtype_t_out* out, Py_ssize_t odepth,
                                    Py_ssize_t* histo,
-                                   double pop, dtype_t g,
+                                   Py_ssize_t pop, dtype_t g,
                                    Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                    double p0, double p1,
                                    Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -39,7 +39,7 @@ cdef inline void _kernel_autolevel(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_bottomhat(dtype_t_out* out, Py_ssize_t odepth,
                                    Py_ssize_t* histo,
-                                   double pop, dtype_t g,
+                                   Py_ssize_t pop, dtype_t g,
                                    Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                    double p0, double p1,
                                    Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -57,27 +57,28 @@ cdef inline void _kernel_bottomhat(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_equalize(dtype_t_out* out, Py_ssize_t odepth,
                                   Py_ssize_t* histo,
-                                  double pop, dtype_t g,
+                                  Py_ssize_t pop, dtype_t g,
                                   Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                   double p0, double p1,
                                   Py_ssize_t s0, Py_ssize_t s1) nogil:
 
     cdef Py_ssize_t i
     cdef Py_ssize_t sum = 0
+    cdef double dpop = pop
 
     if pop:
         for i in range(max_bin):
             sum += histo[i]
             if i >= g:
                 break
-        out[0] = <dtype_t_out>(((max_bin - 1) * sum) / pop)
+        out[0] = <dtype_t_out>(((max_bin - 1) * sum) / dpop)
     else:
         out[0] = <dtype_t_out>0
 
 
 cdef inline void _kernel_gradient(dtype_t_out* out, Py_ssize_t odepth,
                                   Py_ssize_t* histo,
-                                  double pop, dtype_t g,
+                                  Py_ssize_t pop, dtype_t g,
                                   Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                   double p0, double p1,
                                   Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -100,7 +101,7 @@ cdef inline void _kernel_gradient(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_maximum(dtype_t_out* out, Py_ssize_t odepth,
                                  Py_ssize_t* histo,
-                                 double pop, dtype_t g,
+                                 Py_ssize_t pop, dtype_t g,
                                  Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                  double p0, double p1,
                                  Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -118,68 +119,71 @@ cdef inline void _kernel_maximum(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_mean(dtype_t_out* out, Py_ssize_t odepth,
                               Py_ssize_t* histo,
-                              double pop, dtype_t g,
+                              Py_ssize_t pop, dtype_t g,
                               Py_ssize_t max_bin, Py_ssize_t mid_bin,
                               double p0, double p1,
                               Py_ssize_t s0, Py_ssize_t s1) nogil:
 
     cdef Py_ssize_t i
     cdef Py_ssize_t mean = 0
-
+    cdef double dpop = pop
     if pop:
         for i in range(max_bin):
             mean += histo[i] * i
-        out[0] = <dtype_t_out>(mean / pop)
+        out[0] = <dtype_t_out>(mean / dpop)
     else:
         out[0] = <dtype_t_out>0
 
 
 cdef inline void _kernel_geometric_mean(dtype_t_out* out, Py_ssize_t odepth,
                                         Py_ssize_t* histo,
-                                        double pop, dtype_t g,
+                                        Py_ssize_t pop, dtype_t g,
                                         Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                         double p0, double p1,
                                         Py_ssize_t s0, Py_ssize_t s1) nogil:
 
     cdef Py_ssize_t i
     cdef double mean = 0.
+    cdef double dpop = pop
 
     if pop:
         for i in range(max_bin):
             if histo[i]:
                 mean += (histo[i] * log(i+1))
-        out[0] = <dtype_t_out>round(exp(mean / pop)-1)
+        out[0] = <dtype_t_out>round(exp(mean / dpop)-1)
     else:
         out[0] = <dtype_t_out>0
 
 
 cdef inline void _kernel_subtract_mean(dtype_t_out* out, Py_ssize_t odepth,
                                        Py_ssize_t* histo,
-                                       double pop, dtype_t g,
+                                       Py_ssize_t pop, dtype_t g,
                                        Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                        double p0, double p1,
                                        Py_ssize_t s0, Py_ssize_t s1) nogil:
 
     cdef Py_ssize_t i
     cdef Py_ssize_t mean = 0
+    cdef double dpop = pop
 
     if pop:
         for i in range(max_bin):
             mean += histo[i] * i
-        out[0] = <dtype_t_out>((g - mean / pop) / 2. + 127)
+        out[0] = <dtype_t_out>((g - mean / dpop) / 2. + 127)
     else:
         out[0] = <dtype_t_out>0
 
 
 cdef inline void _kernel_median(dtype_t_out* out, Py_ssize_t odepth,
                                 Py_ssize_t* histo,
-                                double pop, dtype_t g,
+                                Py_ssize_t pop, dtype_t g,
                                 Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                 double p0, double p1,
                                 Py_ssize_t s0, Py_ssize_t s1) nogil:
 
     cdef Py_ssize_t i
-    cdef double sum = pop / 2.0
+    cdef double dpop = pop
+    cdef double sum = dpop / 2.0
 
     if pop:
         for i in range(max_bin):
@@ -194,7 +198,7 @@ cdef inline void _kernel_median(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_minimum(dtype_t_out* out, Py_ssize_t odepth,
                                  Py_ssize_t* histo,
-                                 double pop, dtype_t g,
+                                 Py_ssize_t pop, dtype_t g,
                                  Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                  double p0, double p1,
                                  Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -212,7 +216,7 @@ cdef inline void _kernel_minimum(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_modal(dtype_t_out* out, Py_ssize_t odepth,
                                Py_ssize_t* histo,
-                               double pop, dtype_t g,
+                               Py_ssize_t pop, dtype_t g,
                                Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                double p0, double p1,
                                Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -232,7 +236,7 @@ cdef inline void _kernel_modal(dtype_t_out* out, Py_ssize_t odepth,
 cdef inline void _kernel_enhance_contrast(dtype_t_out* out,
                                           Py_ssize_t odepth,
                                           Py_ssize_t* histo,
-                                          double pop,
+                                          Py_ssize_t pop,
                                           dtype_t g,
                                           Py_ssize_t max_bin,
                                           Py_ssize_t mid_bin, double p0,
@@ -260,7 +264,7 @@ cdef inline void _kernel_enhance_contrast(dtype_t_out* out,
 
 cdef inline void _kernel_pop(dtype_t_out* out, Py_ssize_t odepth,
                              Py_ssize_t* histo,
-                             double pop, dtype_t g,
+                             Py_ssize_t pop, dtype_t g,
                              Py_ssize_t max_bin, Py_ssize_t mid_bin,
                              double p0, double p1,
                              Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -270,7 +274,7 @@ cdef inline void _kernel_pop(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_sum(dtype_t_out* out, Py_ssize_t odepth,
                              Py_ssize_t* histo,
-                             double pop, dtype_t g,
+                             Py_ssize_t pop, dtype_t g,
                              Py_ssize_t max_bin, Py_ssize_t mid_bin,
                              double p0, double p1,
                              Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -288,25 +292,26 @@ cdef inline void _kernel_sum(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_threshold(dtype_t_out* out, Py_ssize_t odepth,
                                    Py_ssize_t* histo,
-                                   double pop, dtype_t g,
+                                   Py_ssize_t pop, dtype_t g,
                                    Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                    double p0, double p1,
                                    Py_ssize_t s0, Py_ssize_t s1) nogil:
 
     cdef Py_ssize_t i
     cdef Py_ssize_t mean = 0
+    cdef double dpop = pop
 
     if pop:
         for i in range(max_bin):
             mean += histo[i] * i
-        out[0] = <dtype_t_out>(g > (mean / pop))
+        out[0] = <dtype_t_out>(g > (mean / dpop))
     else:
         out[0] = <dtype_t_out>0
 
 
 cdef inline void _kernel_tophat(dtype_t_out* out, Py_ssize_t odepth,
                                 Py_ssize_t* histo,
-                                double pop, dtype_t g,
+                                Py_ssize_t pop, dtype_t g,
                                 Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                 double p0, double p1,
                                 Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -324,7 +329,7 @@ cdef inline void _kernel_tophat(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_noise_filter(dtype_t_out* out, Py_ssize_t odepth,
                                       Py_ssize_t* histo,
-                                      double pop, dtype_t g,
+                                      Py_ssize_t pop, dtype_t g,
                                       Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                       double p0, double p1,
                                       Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -351,17 +356,18 @@ cdef inline void _kernel_noise_filter(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_entropy(dtype_t_out* out, Py_ssize_t odepth,
                                  Py_ssize_t* histo,
-                                 double pop, dtype_t g,
+                                 Py_ssize_t pop, dtype_t g,
                                  Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                  double p0, double p1,
                                  Py_ssize_t s0, Py_ssize_t s1) nogil:
     cdef Py_ssize_t i
     cdef double e, p
+    cdef double dpop = pop
 
     if pop:
         e = 0.
         for i in range(max_bin):
-            p = histo[i] / pop
+            p = histo[i] / dpop
             if p > 0:
                 e -= p * log(p)
         out[0] = <dtype_t_out>(e * 1.442695040888963407359924681001892137)
@@ -371,7 +377,7 @@ cdef inline void _kernel_entropy(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_otsu(dtype_t_out* out, Py_ssize_t odepth,
                               Py_ssize_t* histo,
-                              double pop, dtype_t g,
+                              Py_ssize_t pop, dtype_t g,
                               Py_ssize_t max_bin, Py_ssize_t mid_bin,
                               double p0, double p1,
                               Py_ssize_t s0, Py_ssize_t s1) nogil:
@@ -379,23 +385,25 @@ cdef inline void _kernel_otsu(dtype_t_out* out, Py_ssize_t odepth,
     cdef Py_ssize_t max_i
     cdef double P, mu1, mu2, q1, new_q1, sigma_b, max_sigma_b, t
     cdef double mu = 0.
+    cdef double dpop = pop
 
     # compute local mean
-    if pop:
-        for i in range(max_bin):
-            mu += histo[i] * i
-        mu = mu / pop
-    else:
+    if not pop:
         out[0] = <dtype_t_out>0
+        return
+
+    for i in range(max_bin):
+        mu += histo[i] * i
+    mu = mu / dpop
 
     # maximizing the between class variance
     max_i = 0
-    q1 = histo[0] / pop
+    q1 = histo[0] / dpop
     mu1 = 0.
     max_sigma_b = 0.
 
     for i in range(1, max_bin):
-        P = histo[i] / pop
+        P = histo[i] / dpop
         new_q1 = q1 + P
         if new_q1 > 0:
             mu1 = (q1 * mu1 + i * P) / new_q1
@@ -412,15 +420,16 @@ cdef inline void _kernel_otsu(dtype_t_out* out, Py_ssize_t odepth,
 
 cdef inline void _kernel_win_hist(dtype_t_out* out, Py_ssize_t odepth,
                                   Py_ssize_t* histo,
-                                  double pop, dtype_t g,
+                                  Py_ssize_t pop, dtype_t g,
                                   Py_ssize_t max_bin, Py_ssize_t mid_bin,
                                   double p0, double p1,
                                   Py_ssize_t s0, Py_ssize_t s1) nogil:
     cdef Py_ssize_t i
     cdef Py_ssize_t max_i
     cdef double scale
+    cdef double dpop = pop
     if pop:
-        scale = 1.0 / pop
+        scale = 1.0 / dpop
         for i in xrange(odepth):
             out[i] = <dtype_t_out>(histo[i] * scale)
     else:
