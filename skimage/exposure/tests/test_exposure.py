@@ -276,7 +276,8 @@ def test_adapthist_grayscale():
     img = skimage.img_as_float(data.astronaut())
     img = rgb2gray(img)
     img = np.dstack((img, img, img))
-    with expected_warnings(['precision loss|non-contiguous input']):
+    with expected_warnings(['precision loss|non-contiguous input',
+                            r'divide by zero|\A\Z']):
         adapted = exposure.equalize_adapthist(img, kernel_size=(57, 51),
                                               clip_limit=0.01, nbins=128)
     assert img.shape == adapted.shape
@@ -292,7 +293,8 @@ def test_adapthist_color():
         warnings.simplefilter('always')
         hist, bin_centers = exposure.histogram(img)
         assert len(w) > 0
-    with expected_warnings(['precision loss']):
+    with expected_warnings(['precision loss',
+                            r'divide by zero|\A\Z']):
         adapted = exposure.equalize_adapthist(img, clip_limit=0.01)
 
     assert adapted.min() == 0
@@ -310,7 +312,8 @@ def test_adapthist_alpha():
     img = skimage.img_as_float(data.astronaut())
     alpha = np.ones((img.shape[0], img.shape[1]), dtype=float)
     img = np.dstack((img, alpha))
-    with expected_warnings(['precision loss']):
+    with expected_warnings(['precision loss',
+                            r'divide by zero|\A\Z']):
         adapted = exposure.equalize_adapthist(img)
     assert adapted.shape != img.shape
     img = img[:, :, :3]
