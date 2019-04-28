@@ -15,10 +15,10 @@ SCIPY_RANK_WARNING = r'numpy.linalg.matrix_rank|\A\Z'
 PYAMG_MISSING_WARNING = r'pyamg|\A\Z'
 PYAMG_OR_SCIPY_WARNING = SCIPY_RANK_WARNING + '|' + PYAMG_MISSING_WARNING
 
-if (Version(np.__version__) >= '1.15.0'):
-    NUMPY_MATRIX_WARNING = 'matrix subclass'
-else:
-    NUMPY_MATRIX_WARNING = None
+# Some new versions of numpy (1.16.X) seem to emit this warning.
+# Others do not. scikit-image doesn't use the matrix subclass directly
+# but other libraries might.
+NUMPY_MATRIX_WARNING = r'matrix subclass|\A\Z'
 
 
 def make_2d_syntheticdata(lx, ly=None):
@@ -352,7 +352,7 @@ def test_trivial_cases():
             output_labels = random_walker(img, markers)
     assert np.all(output_labels[markers == 1] == 1)
     # Here 0-labeled pixels could not be determined (no connexion to seed)
-    assert np.all(output_labels[markers == 0] == -1) 
+    assert np.all(output_labels[markers == 0] == -1)
     with expected_warnings(["Returning provided labels"]):
         test = random_walker(img, markers, return_full_prob=True)
 
