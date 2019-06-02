@@ -73,7 +73,28 @@ image_fetcher = pooch.create(
     # openssl sha256 filename
     # to generate the sha256 hash
     registry={
+        "astronaut.png" : "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+        "camera.png": "361a6d56d22ee52289cd308d5461d090e06a56cb36007d8dfc3226cbe8aaa5db",
+        "chessboard_GRAY.png": "3e51870774515af4d07d820bd8827364c70839bf9b573c746e485095e893df90",
+        "chelsea.png": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
+        "clock_motion.png": "f029226b28b642e80113d86622e9b215ee067a0966feaf5e60604a1e05733955",
+        "coffee.png": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+        "coins.png": "f8d773fc9cfa6f4d8e5942dc34d0a0788fcaed2a4fefbbed0aef5398d7ef4cba",
         "cells_qpi.npz": "a9c5212894bd4de8fddebd679500aff67f04b4e25e41c3f347f3e876ce648252",
+        "horse.png": "c7fb60789fe394c485f842291ea3b21e50d140f39d6dcb5fb9917cc178225455",
+        "hubble_deep_field.jpg": "3a19c5dd8a927a9334bb1229a6d63711b1c0c767fb27e2286e7c84a3e2c2f5f4",
+        "ihc.png": "f8dd1aa387ddd1f49d8ad13b50921b237df8e9b262606d258770687b0ef93cef",
+        "logo.png": "f2c57fe8af089f08b5ba523d95573c26e62904ac5967f4c8851b27d033690168",
+        "lfw_subset.npy": "9560ec2f5edfac01973f63a8a99d00053fecd11e21877e18038fbe500f8e872c",
+        "microaneurysms.png": "a1e1be59aa447f8ce082f7fa809997ab369a2b137cb6c4202abc647c7ccf6456",
+        "moon.png": "78739619d11f7eb9c165bb5d2efd4772cee557812ec847532dbb1d92ef71f577",
+        "motorcycle_left.png": "db18e9c4157617403c3537a6ba355dfeafe9a7eabb6b9b94cb33f6525dd49179",
+        "motorcycle_right.png": "5fc913ae870e42a4b662314bc904d1786bcad8e2f0b9b67dba5a229406357797",
+        "motorcycle_disp.npz": "2e49c8cebff3fa20359a0cc6880c82e1c03bbb106da81a177218281bc2f113d7",
+        "page.png": "341a6f0a61557662b02734a9b6e56ec33a915b2c41886b97509dedf2a43b47a3",
+        "retina.jpg": "38a07f36f27f095e818aea7b96d34202c05176d30253c66733f2e00379e9e0e6",
+        "rocket.jpg": "c2dd0de7c538df8d111e479619b129464d0269d0ae5fd18ca91d33a7fdfea95c",
+        "text.png": "bd84aa3a6e3c9887850d45d606c96b2e59433fbef50338570b63c319e668e6d1",
     }
 )
 
@@ -108,7 +129,8 @@ def load(f, as_gray=False):
         Image loaded from ``skimage.data_dir``.
     """
     use_plugin('pil')
-    return imread(_os.path.join(data_dir, f), as_gray=as_gray)
+    filename = image_fetcher.fetch(f)
+    return imread(filename, as_gray=as_gray)
 
 
 def quantitative_phase_cells():
@@ -142,8 +164,7 @@ def quantitative_phase_cells():
     These data are dedicated to the public domain. You can copy, modify,
     or distribute them without asking permission.
     """
-    filename = image_fetcher.fetch("cells_qpi.npz")
-    data = np.load(filename)
+    data = load("cells_qpi.npz")
     return np.asarray(data["arr_0"], dtype=np.float)
 
 def camera():
