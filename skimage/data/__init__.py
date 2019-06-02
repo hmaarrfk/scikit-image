@@ -60,7 +60,7 @@ if 'dev' in Version(__version__).version:
     base_url = "https://github.com/hmaarrfk/scikit-image/raw/pooch/data/"
     version = None
 else:
-    base_url="https://github.com/hmaarrfk/scikit-image/raw/{version}/data/"
+    base_url = "https://github.com/hmaarrfk/scikit-image/raw/{version}/data/"
     version = __version__
 
 # Create a new friend to manage your sample data storage
@@ -127,9 +127,9 @@ def quantitative_phase_cells():
     imaging technique: digital holography
     date of acquisition: 2015/10/29
 
-    context:
-    These data were part of a comparison between several refractive index retrieval
-    techniques for spherical objects as part of the publication (figure 5d):
+    context: These data were part of a comparison between several refractive
+    index retrieval techniques for spherical objects as part of the publication
+    (figure 5d):
 
         Paul Müller, Mirjam Schürmann, Salvatore Girardo, Gheorghe Cojoc,
         and Jochen Guck
