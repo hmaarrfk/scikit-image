@@ -139,9 +139,9 @@ class ImageCollection(object):
     Examples
     --------
     >>> import skimage.io as io
-    >>> from skimage import data_dir
+    >>> from skimage.data import fetch
 
-    >>> coll = io.ImageCollection(data_dir + '/chess*.png')
+    >>> coll = io.ImageCollection([fetch('chessboard_GRAY.png'), fetch('coins.png')])
     >>> len(coll)
     2
     >>> coll[0].shape
