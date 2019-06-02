@@ -76,6 +76,20 @@ image_fetcher = pooch.create(
 )
 
 
+def prefetch():
+    """Prefect all datasets from the internet to the local cache.
+
+    Scikit-image datasets are no longer shipped with the library by default.
+    This allows us to use higher quality datasets, while keeping the
+    library download size small.
+
+    Call this function to prefetch the all sample images making them available
+    offline on your machine.
+    """
+    for filename in image_fetcher.registry:
+        image_fetcher.fetch(filename)
+
+
 def load(f, as_gray=False):
     """Load an image file located in the data directory.
 
