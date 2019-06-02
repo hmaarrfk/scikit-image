@@ -38,7 +38,7 @@ from skimage.color import (rgb2hsv, hsv2rgb,
                            rgba2rgb,
                            guess_spatial_dimensions)
 
-from skimage import data_dir
+from skimage.data import colorwheel, camera
 from skimage._shared._warnings import expected_warnings
 from skimage._shared import testing
 import colorsys
@@ -59,9 +59,8 @@ def test_guess_spatial_dimensions():
 
 
 class TestColorconv(TestCase):
-
-    img_rgb = imread(os.path.join(data_dir, 'color.png'))
-    img_grayscale = imread(os.path.join(data_dir, 'camera.png'))
+    img_rgb = colorwheel()
+    img_grayscale = camera()
     img_rgba = np.array([[[0, 0.5, 1, 0],
                           [0, 0.5, 1, 1],
                           [0, 0.5, 1, 0.5]]]).astype(np.float)

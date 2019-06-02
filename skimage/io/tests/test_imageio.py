@@ -2,7 +2,7 @@ import os
 from tempfile import NamedTemporaryFile
 
 import numpy as np
-from skimage import data_dir
+from skimage.data import fetch
 from skimage.io import imread, imsave, use_plugin, reset_plugins
 
 from skimage._shared import testing
@@ -30,17 +30,18 @@ def teardown():
 
 @testing.skipif(not imageio_available, reason="imageio not installed")
 def test_imageio_as_gray():
-    img = imread(os.path.join(data_dir, 'color.png'), as_gray=True)
+
+    img = imread(fetch('color.png'), as_gray=True)
     assert img.ndim == 2
     assert img.dtype == np.float64
-    img = imread(os.path.join(data_dir, 'camera.png'), as_gray=True)
+    img = imread(fetch('camera.png'), as_gray=True)
     # check that conversion does not happen for a gray image
     assert np.sctype2char(img.dtype) in np.typecodes['AllInteger']
 
 
 @testing.skipif(not imageio_available, reason="imageio not installed")
 def test_imageio_palette():
-    img = imread(os.path.join(data_dir, 'palette_color.png'))
+    img = imread(fetch('test/palette_color.png'))
     assert img.ndim == 3
 
 
@@ -49,7 +50,7 @@ def test_imageio_truncated_jpg():
     # imageio>2.0 uses Pillow / PIL to try and load the file.
     # Oddly, PIL explicitly raises a SyntaxError when the file read fails.
     with testing.raises(SyntaxError):
-        imread(os.path.join(data_dir, 'truncated.jpg'))
+        imread(fetch('test/truncated.jpg'))
 
 
 class TestSave(TestCase):
@@ -78,6 +79,6 @@ class TestSave(TestCase):
 
 def test_return_class():
     testing.assert_equal(
-        type(imread(os.path.join(data_dir, 'color.png'))),
+        type(imread(fetch('color.png'))),
         np.ndarray
     )

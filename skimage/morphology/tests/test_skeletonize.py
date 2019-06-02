@@ -6,7 +6,7 @@ from skimage.morphology._skeletonize import (_generate_thin_luts,
 from skimage import draw
 from scipy.ndimage import correlate
 from skimage.io import imread
-from skimage import data_dir
+from skimage.data import fetch
 
 from skimage._shared import testing
 from skimage._shared.testing import assert_array_equal
@@ -60,13 +60,13 @@ class TestSkeletonize():
         assert_array_equal(result, im)
 
     def test_skeletonize_output(self):
-        im = imread(os.path.join(data_dir, "bw_text.png"), as_gray=True)
+        im = imread(fetch("test/bw_text.png"), as_gray=True)
 
         # make black the foreground
         im = (im == 0)
         result = skeletonize(im)
 
-        expected = np.load(os.path.join(data_dir, "bw_text_skeleton.npy"))
+        expected = np.load(fetch("test/bw_text_skeleton.npy"))
         assert_array_equal(result, expected)
 
     def test_skeletonize_num_neighbours(self):

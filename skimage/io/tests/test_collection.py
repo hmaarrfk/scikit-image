@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from skimage import data_dir
+from skimage import data
 from skimage.io.collection import ImageCollection, alphanumeric_key
 from skimage.io import reset_plugins
 
@@ -26,10 +26,10 @@ def test_string_sort():
 
 class TestImageCollection(TestCase):
 
-    pattern = [os.path.join(data_dir, pic)
+    pattern = [data.fetch(pic)
                for pic in ['camera.png', 'color.png']]
 
-    pattern_matched = [os.path.join(data_dir, pic)
+    pattern_matched = [data.fetch(pic)
                        for pic in ['camera.png', 'moon.png']]
 
     def setUp(self):

@@ -2,7 +2,8 @@ import os
 import numpy as np
 from scipy import ndimage as ndi
 from skimage import color
-from skimage import data, data_dir
+from skimage import data
+from skimage.data import fetch
 from skimage import feature
 from skimage import img_as_float
 from skimage import draw
@@ -21,8 +22,7 @@ def test_hog_output_size():
 
 def test_hog_output_correctness_l1_norm():
     img = color.rgb2gray(data.astronaut())
-    correct_output = np.load(
-        os.path.join(data_dir, 'astronaut_GRAY_hog_L1.npy'))
+    correct_output = np.load(fetch('test/astronaut_GRAY_hog_L1.npy'))
 
     output = feature.hog(img, orientations=9, pixels_per_cell=(8, 8),
                          cells_per_block=(3, 3), block_norm='L1',
@@ -33,8 +33,7 @@ def test_hog_output_correctness_l1_norm():
 
 def test_hog_output_correctness_l2hys_norm():
     img = color.rgb2gray(data.astronaut())
-    correct_output = np.load(
-        os.path.join(data_dir, 'astronaut_GRAY_hog_L2-Hys.npy'))
+    correct_output = np.load(fetch('test/astronaut_GRAY_hog_L2-Hys.npy'))
 
     output = feature.hog(img, orientations=9, pixels_per_cell=(8, 8),
                          cells_per_block=(3, 3), block_norm='L2-Hys',

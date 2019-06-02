@@ -1,7 +1,7 @@
 import os.path
 import numpy as np
 import skimage.io as io
-from skimage import data_dir
+from skimage.data import fetch
 from skimage._shared import testing
 
 testing.pytest.importorskip('astropy')
@@ -25,21 +25,21 @@ def teardown():
 
 def test_imread_MEF():
     io.use_plugin('fits')
-    testfile = os.path.join(data_dir, 'multi.fits')
+    testfile = fetch('test/multi.fits')
     img = io.imread(testfile)
     assert np.all(img == fits.getdata(testfile, 1))
 
 
 def test_imread_simple():
     io.use_plugin('fits')
-    testfile = os.path.join(data_dir, 'simple.fits')
+    testfile = fetch('test/simple.fits')
     img = io.imread(testfile)
     assert np.all(img == fits.getdata(testfile, 0))
 
 
 def test_imread_collection_single_MEF():
     io.use_plugin('fits')
-    testfile = os.path.join(data_dir, 'multi.fits')
+    testfile = fetch('test/multi.fits')
     ic1 = io.imread_collection(testfile)
     ic2 = io.ImageCollection(
         [(testfile, 1), (testfile, 2), (testfile, 3)],
@@ -49,8 +49,8 @@ def test_imread_collection_single_MEF():
 
 def test_imread_collection_MEF_and_simple():
     io.use_plugin('fits')
-    testfile1 = os.path.join(data_dir, 'multi.fits')
-    testfile2 = os.path.join(data_dir, 'simple.fits')
+    testfile1= fetch('test/multi.fits')
+    testfile2 = fetch('test/simple.fits')
     ic1 = io.imread_collection([testfile1, testfile2])
     ic2 = io.ImageCollection([(testfile1, 1), (testfile1, 2),
                              (testfile1, 3), (testfile2, 0)],

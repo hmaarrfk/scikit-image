@@ -1,13 +1,13 @@
 import numpy as np
 
-import skimage.data as data
+from skimage import data
 from skimage.feature import Cascade
 
 
 def test_detector_astronaut():
 
     # Load the trained file from the module root.
-    trained_file = data.lbp_frontal_face_cascade_filename()
+    trained_file = data.fetch("test/lbpcascade_frontalface_opencv.xml")
 
     # Initialize the detector cascade.
     detector = Cascade(trained_file)
