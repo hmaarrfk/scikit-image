@@ -7,14 +7,19 @@ For more images, see
 """
 
 import os as _os
+import numpy as np
 
 import numpy as _np
+from distutils.version import LooseVersion as Version
+import pooch
 
 from ..io import imread, use_plugin
 from .._shared._warnings import expected_warnings, warn
 from ..util.dtype import img_as_bool
 from ._binary_blobs import binary_blobs
 from ._detect import lbp_frontal_face_cascade_filename
+
+from .. import __version__
 
 import os.path as osp
 data_dir = osp.abspath(osp.dirname(__file__))
@@ -44,6 +49,33 @@ __all__ = ['data_dir',
            'stereo_motorcycle']
 
 
+# Pooch expects a `+` to exist in development versions.
+# Since scikit-image doesn't follow that convetion, we have to manually provide
+# it with the URL and set the version to None
+if 'dev' in Version(__version__).version:
+    # even dev versions should use the online repo since users might be
+    # using the nightly builds
+    base_url = "https://github.com/hmaarrfk/scikit-image/raw/pooch/data/"
+    version = None
+else:
+    base_url="https://github.com/hmaarrfk/scikit-image/raw/{version}/data/"
+    version = __version__
+
+# Create a new friend to manage your sample data storage
+image_fetcher = pooch.create(
+    path=pooch.os_cache("scikit-image"),
+    base_url=base_url,
+    version=version,
+    env="SCIKIT_IMAGE_DATA_DIR",
+    # Use the command
+    # openssl sha256 filename
+    # to generate the sha256 hash
+    registry={
+        "cells_qpi.npz": "a9c5212894bd4de8fddebd679500aff67f04b4e25e41c3f347f3e876ce648252",
+    }
+)
+
+
 def load(f, as_gray=False):
     """Load an image file located in the data directory.
 
@@ -62,6 +94,41 @@ def load(f, as_gray=False):
     use_plugin('pil')
     return imread(_os.path.join(data_dir, f), as_gray=as_gray)
 
+
+def quantitative_phase_cells():
+    """Image of two cells retrieved from a digital hologram.
+
+    This is a quantitative phase image retrieved from a digital hologram using
+    the Python library qpformat. The data show two cells (left and right) with
+    high phase values and an imaging artifact of the optical system (center)
+    with phase values close to the background phase.
+
+    sample: HL60/S4 cells
+    medium: phosphate buffered saline (PBS, n=1.335)
+    imaging wavelength: 633nm
+    pixel size: 0.107µm
+    phase units: radians
+    imaging technique: digital holography
+    date of acquisition: 2015/10/29
+
+    context:
+    These data were part of a comparison between several refractive index retrieval
+    techniques for spherical objects as part of the publication (figure 5d):
+
+        Paul Müller, Mirjam Schürmann, Salvatore Girardo, Gheorghe Cojoc,
+        and Jochen Guck
+        "Accurate evaluation of size and refractive index for spherical
+        objects in quantitative phase imaging,"
+        Optics Express 26(8): 10729-10743, 2018.
+        doi:10.1364/OE.26.010729
+
+    license: CC0
+    These data are dedicated to the public domain. You can copy, modify,
+    or distribute them without asking permission.
+    """
+    filename = image_fetcher.fetch("cells_qpi.npz")
+    data = np.load(filename)
+    return np.asarray(data["arr_0"], dtype=np.float)
 
 def camera():
     """Gray-level "camera" image.
