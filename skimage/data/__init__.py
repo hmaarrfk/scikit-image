@@ -75,12 +75,13 @@ image_fetcher = pooch.create(
     registry={
         "astronaut.png" : "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
         "camera.png": "361a6d56d22ee52289cd308d5461d090e06a56cb36007d8dfc3226cbe8aaa5db",
+        "cells_qpi.npz": "a9c5212894bd4de8fddebd679500aff67f04b4e25e41c3f347f3e876ce648252",
         "chessboard_GRAY.png": "3e51870774515af4d07d820bd8827364c70839bf9b573c746e485095e893df90",
         "chelsea.png": "596aa1e7cb875eb79f437e310381d26b338a81c2da23439704a73c4651e8c4bb",
         "clock_motion.png": "f029226b28b642e80113d86622e9b215ee067a0966feaf5e60604a1e05733955",
         "coffee.png": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
         "coins.png": "f8d773fc9cfa6f4d8e5942dc34d0a0788fcaed2a4fefbbed0aef5398d7ef4cba",
-        "cells_qpi.npz": "a9c5212894bd4de8fddebd679500aff67f04b4e25e41c3f347f3e876ce648252",
+        "color.png": "7d2df993de2b4fa2a78e04e5df8050f49a9c511aa75e59ab3bd56ac9c98aef7e",
         "horse.png": "c7fb60789fe394c485f842291ea3b21e50d140f39d6dcb5fb9917cc178225455",
         "hubble_deep_field.jpg": "3a19c5dd8a927a9334bb1229a6d63711b1c0c767fb27e2286e7c84a3e2c2f5f4",
         "ihc.png": "f8dd1aa387ddd1f49d8ad13b50921b237df8e9b262606d258770687b0ef93cef",
@@ -92,11 +93,39 @@ image_fetcher = pooch.create(
         "motorcycle_right.png": "5fc913ae870e42a4b662314bc904d1786bcad8e2f0b9b67dba5a229406357797",
         "motorcycle_disp.npz": "2e49c8cebff3fa20359a0cc6880c82e1c03bbb106da81a177218281bc2f113d7",
         "page.png": "341a6f0a61557662b02734a9b6e56ec33a915b2c41886b97509dedf2a43b47a3",
+        "phantom.png": "552ff698167aa402cceb17981130607a228a0a0aa7c519299eaa4d5f301ba36c",
         "retina.jpg": "38a07f36f27f095e818aea7b96d34202c05176d30253c66733f2e00379e9e0e6",
         "rocket.jpg": "c2dd0de7c538df8d111e479619b129464d0269d0ae5fd18ca91d33a7fdfea95c",
         "text.png": "bd84aa3a6e3c9887850d45d606c96b2e59433fbef50338570b63c319e668e6d1",
+        "test/chessboard_GRAY_U16.tif": "9fd3392c5b6cbc5f686d8ff83eb57ef91d038ee0852ac26817e5ac99df4c7f45",
+        "test/chessboard_GRAY_U16B.tif": "b0a9270751f0fc340c90b8b615b62b88187b9ab5995942717566735d523cddb2",
+        "test/chessboard_GRAY_U8.npy": "71f394694b721e8a33760a355b3666c9b7d7fc1188ff96b3cd23c2a1d73a38d8",
+        "test/lbpcascade_frontalface_opencv.xml": "03097789a3dcbb0e40d20b9ef82537dbc3b670b6a7f2268d735470f22e003a91",
+        "test/astronaut_GRAY_hog_L1.npy": "5d8ab22b166d1dd49c12caeff9d178ed28132efea3852b952e9d75f7f7f94954",
+        "test/astronaut_GRAY_hog_L2-Hys.npy": "c4dd6e50d1129aada358311cf8880ce8c775f31e0e550fc322c16e43a96d56fe",
+        "test/rank_filter_tests.npz": "efaf5699630f4a53255e91681dc72a965acd4a8aa1f84671c686fb93e7df046d",
+        "test/multi.fits": "5c71a83436762a52b1925f2f0d83881af7765ed50aede155af2800e54bbd5040",
+        "test/simple.fits": "cd36087fdbb909b6ba506bbff6bcd4c5f4da3a41862608fbac5e8555ef53d40f",
+        "test/palette_color.png": "c4e817035fb9f7730fe95cff1da3866dea01728efc72b6e703d78f7ab9717bdd",
+        "test/palette_gray.png": "bace7f73783bf3ab3b7fdaf701707e4fa09f0dbd0ea72cf5b12ddc73d50b02a9",
+        "test/green_palette.png": "42d49d94be8f9bc76e50639d3701ed0484258721f6b0bd7f50bb1b9274a010f0",
+        "test/truncated.jpg": "4c226038acc78012d335efba29c6119a24444a886842182b7e18db378f4a557d",
+        "test/multipage.tif": "4da0ad0d3df4807a9847247d1b5e565b50d46481f643afb5c37c14802c78130f",
+        "test/multipage_rgb.tif": "1d23b844fd38dce0e2d06f30432817cdb85e52070d8f5460a2ba58aebf34a0de",
+        "test/no_time_for_that_tiny.gif": "20abe94ba9e45f18de416c5fbef8d1f57a499600be40f9a200fae246010eefce",
+        "test/foo3x5x4indexed.png": "48a64c25c6da000ffdb5fcc34ebafe9ba3b1c9b61d7984ea7ca6dc54f9312dfa",
+        "test/mssim_matlab_output.npz": "cc11a14bfa040c75b02db32282439f2e2e3e96779196c171498afaa70528ed7a",
+        "test/gray_morph_output.npz": "3012eb994e864e1dca1f66fada6b4375f84eac63658d049886b710488c2394d1",
+        "test/disk-matlab-output.npz": "8a39d5c866f6216d6a9c9166312aa4bbf4d18fab3d0dcd963c024985bde5856b",
+        "test/diamond-matlab-output.npz": "02fca68907e2b252b501dfe977eef71ae39fadaaa3702ebdc855195422ae1cc2",
+        "test/bw_text.png": "308c2b09f8975a69b212e103b18520e8cbb7a4eccfce0f757836cd371f1b9094",
+        "test/bw_text_skeleton.npy": "9ff4fc23c6a01497d7987f14e3a97cbcc39cce54b2b3b7ee33b84c1b661d0ae1",
+        "test/_blobs_3d_fiji_skeleton.tif": "5182a2a94f240528985b8d15ec2aebbd5ca3c6b9214beff1eb6099c431e12b7b",
+        "test/checker_bilevel.png": "2e207e486545874a2a3e69ba653b28fdef923157be9017559540e65d1bcb8e28",
     }
 )
+
+fetch = image_fetcher.fetch
 
 
 def prefetch():
@@ -110,7 +139,7 @@ def prefetch():
     offline on your machine.
     """
     for filename in image_fetcher.registry:
-        image_fetcher.fetch(filename)
+        fetch(filename)
 
 
 def load(f, as_gray=False):
@@ -129,8 +158,7 @@ def load(f, as_gray=False):
         Image loaded from ``skimage.data_dir``.
     """
     use_plugin('pil')
-    filename = image_fetcher.fetch(f)
-    return imread(filename, as_gray=as_gray)
+    return imread(fetch(f), as_gray=as_gray)
 
 
 def quantitative_phase_cells():
@@ -164,8 +192,9 @@ def quantitative_phase_cells():
     These data are dedicated to the public domain. You can copy, modify,
     or distribute them without asking permission.
     """
-    data = load("cells_qpi.npz")
-    return np.asarray(data["arr_0"], dtype=np.float)
+    filename = fetch("cells_qpi.npz")
+    data = _np.load(filename)
+    return np.asarray(data['arr_0'], dtype=np.float)
 
 def camera():
     """Gray-level "camera" image.
@@ -547,9 +576,11 @@ def stereo_motorcycle():
     .. [2] http://vision.middlebury.edu/stereo/data/scenes2014/
 
     """
+    filename = fetch("motorcycle_disp.npz")
+    disp = _np.load(filename)['arr_0']
     return (load("motorcycle_left.png"),
             load("motorcycle_right.png"),
-            _np.load(_os.path.join(data_dir, "motorcycle_disp.npz"))["arr_0"])
+            disp)
 
 
 def lfw_subset():
@@ -581,4 +612,12 @@ def lfw_subset():
     .. [2] http://vis-www.cs.umass.edu/lfw/
 
     """
-    return _np.load(_os.path.join(data_dir, 'lfw_subset.npy'))
+    filename = fetch("lfw_subset.npy")
+    return _np.load(filename)
+
+
+def shepp_logan_phantom():
+    return load("phantom.png", as_gray=True)
+
+def colorwheel():
+    return load("color.png")
