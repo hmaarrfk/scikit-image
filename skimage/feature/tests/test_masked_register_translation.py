@@ -3,7 +3,7 @@ from pathlib import Path
 from scipy.ndimage import fourier_shift
 from skimage._shared import testing
 from skimage._shared.testing import assert_equal
-from skimage.data import camera
+from skimage.data import camera, fetch
 from skimage.feature.register_translation import register_translation
 from skimage.feature.masked_register_translation import (
     masked_register_translation, cross_correlate_masked)
@@ -11,8 +11,7 @@ from skimage.io import imread
 
 # Location of test images
 # These images are taken from Dirk Padfields' MATLAB package
-# available on his website: www.dirkpadfield.com 
-IMAGES_DIR = Path(__file__).parent / 'data'
+# available on his website: www.dirkpadfield.com
 
 def test_masked_registration_vs_register_translation():
     """masked_register_translation should give the same results as
@@ -82,32 +81,32 @@ def test_masked_registration_random_masks_non_equal_sizes():
 
 
 def test_masked_registration_padfield_data():
-    """ Masked translation registration should behave like in the original 
+    """ Masked translation registration should behave like in the original
     publication """
-    # Test translated from MATLABimplementation `MaskedFFTRegistrationTest` 
-    # file. You can find the source code here: 
+    # Test translated from MATLABimplementation `MaskedFFTRegistrationTest`
+    # file. You can find the source code here:
     # http://www.dirkpadfield.com/Home/MaskedFFTRegistrationCode.zip
 
     shifts = [(75, 75), (-130, 130), (130, 130)]
     for xi, yi in shifts:
-        
-        fixed_image = imread(
-            IMAGES_DIR / 'OriginalX{:d}Y{:d}.png'.format(xi, yi))
-        moving_image = imread(
-            IMAGES_DIR / 'TransformedX{:d}Y{:d}.png'.format(xi, yi))
+
+        fixed_image = imread(fetch(
+            'feature/tests/data/OriginalX{:d}Y{:d}.png'.format(xi, yi)))
+        moving_image = imread(fetch(
+            'feature/tests/data/TransformedX{:d}Y{:d}.png'.format(xi, yi)))
 
         # Valid pixels are 1
         fixed_mask = (fixed_image != 0)
         moving_mask = (moving_image != 0)
 
         # Note that shifts in x and y and shifts in cols and rows
-        shift_y, shift_x = masked_register_translation(fixed_image, 
-                                                       moving_image, 
-                                                       fixed_mask, 
-                                                       moving_mask, 
+        shift_y, shift_x = masked_register_translation(fixed_image,
+                                                       moving_image,
+                                                       fixed_mask,
+                                                       moving_mask,
                                                        overlap_ratio = 1/10)
-        # Note: by looking at the test code from Padfield's 
-        # MaskedFFTRegistrationCode repository, the 
+        # Note: by looking at the test code from Padfield's
+        # MaskedFFTRegistrationCode repository, the
         # shifts were not xi and yi, but xi and -yi
         assert_equal((shift_x, shift_y), (-xi, yi))
 
@@ -216,7 +215,7 @@ def test_cross_correlate_masked_over_axes():
                                                         arr2[:, :, index],
                                                         m1[:, :, index],
                                                         m2[:, :, index],
-                                                        axes=(0, 1), 
+                                                        axes=(0, 1),
                                                         mode='same')
 
     over_axes = cross_correlate_masked(
