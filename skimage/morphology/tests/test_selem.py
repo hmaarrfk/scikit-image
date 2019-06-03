@@ -68,19 +68,19 @@ class TestSElem():
 
     def test_selem_disk(self):
         """Test disk structuring elements"""
-        self.strel_worker("test/disk-matlab-output.npz", selem.disk)
+        self.strel_worker("tests/disk-matlab-output.npz", selem.disk)
 
     def test_selem_diamond(self):
         """Test diamond structuring elements"""
-        self.strel_worker("test/diamond-matlab-output.npz", selem.diamond)
+        self.strel_worker("tests/diamond-matlab-output.npz", selem.diamond)
 
     def test_selem_ball(self):
         """Test ball structuring elements"""
-        self.strel_worker_3d("test/disk-matlab-output.npz", selem.ball)
+        self.strel_worker_3d("tests/disk-matlab-output.npz", selem.ball)
 
     def test_selem_octahedron(self):
         """Test octahedron structuring elements"""
-        self.strel_worker_3d("test/diamond-matlab-output.npz", selem.octahedron)
+        self.strel_worker_3d("tests/diamond-matlab-output.npz", selem.octahedron)
 
     def test_selem_octagon(self):
         """Test octagon structuring elements"""

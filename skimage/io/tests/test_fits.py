@@ -25,21 +25,21 @@ def teardown():
 
 def test_imread_MEF():
     io.use_plugin('fits')
-    testfile = fetch('test/multi.fits')
+    testfile = fetch('tests/multi.fits')
     img = io.imread(testfile)
     assert np.all(img == fits.getdata(testfile, 1))
 
 
 def test_imread_simple():
     io.use_plugin('fits')
-    testfile = fetch('test/simple.fits')
+    testfile = fetch('tests/simple.fits')
     img = io.imread(testfile)
     assert np.all(img == fits.getdata(testfile, 0))
 
 
 def test_imread_collection_single_MEF():
     io.use_plugin('fits')
-    testfile = fetch('test/multi.fits')
+    testfile = fetch('tests/multi.fits')
     ic1 = io.imread_collection(testfile)
     ic2 = io.ImageCollection(
         [(testfile, 1), (testfile, 2), (testfile, 3)],
@@ -49,8 +49,8 @@ def test_imread_collection_single_MEF():
 
 def test_imread_collection_MEF_and_simple():
     io.use_plugin('fits')
-    testfile1= fetch('test/multi.fits')
-    testfile2 = fetch('test/simple.fits')
+    testfile1= fetch('tests/multi.fits')
+    testfile2 = fetch('tests/simple.fits')
     ic1 = io.imread_collection([testfile1, testfile2])
     ic2 = io.ImageCollection([(testfile1, 1), (testfile1, 2),
                              (testfile1, 3), (testfile2, 0)],

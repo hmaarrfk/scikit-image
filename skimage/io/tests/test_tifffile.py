@@ -20,32 +20,32 @@ def teardown():
 
 
 def test_imread_uint16():
-    expected = np.load(fetch('test/chessboard_GRAY_U8.npy'))
-    img = imread(fetch('test/chessboard_GRAY_U16.tif'))
+    expected = np.load(fetch('tests/chessboard_GRAY_U8.npy'))
+    img = imread(fetch('tests/chessboard_GRAY_U16.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 
 
 def test_imread_uint16_big_endian():
-    expected = np.load(fetch('test/chessboard_GRAY_U8.npy'))
-    img = imread(fetch('test/chessboard_GRAY_U16B.tif'))
+    expected = np.load(fetch('tests/chessboard_GRAY_U8.npy'))
+    img = imread(fetch('tests/chessboard_GRAY_U16B.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 
 
 def test_imread_multipage_rgb_tif():
-    img = imread(fetch('test/multipage_rgb.tif'))
+    img = imread(fetch('tests/multipage_rgb.tif'))
     assert img.shape == (2, 10, 10, 3), img.shape
 
 def test_tifffile_kwarg_passthrough ():
-    img = imread(fetch('test/multipage.tif'), pages=[1],
+    img = imread(fetch('tests/multipage.tif'), pages=[1],
                  multifile=False, multifile_close=True, fastij=True,
                  is_ome=True)
     assert img.shape == (15, 10), img.shape
 
 def test_imread_handle():
-    expected = np.load(fetch('test/chessboard_GRAY_U8.npy'))
-    with open(fetch('test/chessboard_GRAY_U16.tif'), 'rb') as fh:
+    expected = np.load(fetch('tests/chessboard_GRAY_U8.npy'))
+    with open(fetch('tests/chessboard_GRAY_U16.tif'), 'rb') as fh:
         img = imread(fh)
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)

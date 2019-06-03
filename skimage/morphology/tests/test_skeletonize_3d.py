@@ -192,5 +192,5 @@ def test_3d_vs_fiji():
     img = img.astype(np.uint8)*255
 
     img_s = skeletonize(img)
-    img_f = io.imread(fetch("test/_blobs_3d_fiji_skeleton.tif"))
+    img_f = io.imread(fetch("tests/_blobs_3d_fiji_skeleton.tif"))
     assert_equal(img_s, img_f)

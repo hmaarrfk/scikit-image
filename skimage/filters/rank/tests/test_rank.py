@@ -51,7 +51,7 @@ class TestRank():
         # Set again the seed for the other tests.
         np.random.seed(0)
         self.selem = morphology.disk(1)
-        self.refs = np.load(data.fetch('test/rank_filter_tests.npz'))
+        self.refs = np.load(data.fetch('tests/rank_filter_tests.npz'))
 
     @parametrize('filter', all_rank_filters)
     def test_rank_filter(self, filter):

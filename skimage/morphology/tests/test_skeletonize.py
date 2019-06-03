@@ -60,13 +60,13 @@ class TestSkeletonize():
         assert_array_equal(result, im)
 
     def test_skeletonize_output(self):
-        im = imread(fetch("test/bw_text.png"), as_gray=True)
+        im = imread(fetch("tests/bw_text.png"), as_gray=True)
 
         # make black the foreground
         im = (im == 0)
         result = skeletonize(im)
 
-        expected = np.load(fetch("test/bw_text_skeleton.npy"))
+        expected = np.load(fetch("tests/bw_text_skeleton.npy"))
         assert_array_equal(result, expected)
 
     def test_skeletonize_num_neighbours(self):

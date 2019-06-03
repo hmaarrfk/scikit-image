@@ -41,7 +41,7 @@ def test_imageio_as_gray():
 
 @testing.skipif(not imageio_available, reason="imageio not installed")
 def test_imageio_palette():
-    img = imread(fetch('test/palette_color.png'))
+    img = imread(fetch('tests/palette_color.png'))
     assert img.ndim == 3
 
 
@@ -50,7 +50,7 @@ def test_imageio_truncated_jpg():
     # imageio>2.0 uses Pillow / PIL to try and load the file.
     # Oddly, PIL explicitly raises a SyntaxError when the file read fails.
     with testing.raises(SyntaxError):
-        imread(fetch('test/truncated.jpg'))
+        imread(fetch('tests/truncated.jpg'))
 
 
 class TestSave(TestCase):

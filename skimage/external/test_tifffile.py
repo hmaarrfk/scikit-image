@@ -20,16 +20,16 @@ np.random.seed(0)
 
 @testing.skipif(si is None, reason="skimage not installed")
 def test_imread_uint16():
-    expected = np.load(fetch('test/chessboard_GRAY_U8.npy'))
-    img = imread(fetch('test/chessboard_GRAY_U16.tif'))
+    expected = np.load(fetch('tests/chessboard_GRAY_U8.npy'))
+    img = imread(fetch('tests/chessboard_GRAY_U16.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 
 
 @testing.skipif(si is None, reason="skimage not installed")
 def test_imread_uint16_big_endian():
-    expected = np.load(fetch('test/chessboard_GRAY_U8.npy'))
-    img = imread(fetch('test/chessboard_GRAY_U16B.tif'))
+    expected = np.load(fetch('tests/chessboard_GRAY_U8.npy'))
+    img = imread(fetch('tests/chessboard_GRAY_U16B.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 

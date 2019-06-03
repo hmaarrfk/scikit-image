@@ -185,7 +185,7 @@ def test_gaussian_mssim_and_gradient_vs_Matlab():
     # https://ece.uwaterloo.ca/~nnikvand/Coderep/SHINE%20TOOLBOX/SHINEtoolbox/
     # Note: final line of ssim_sens.m was modified to discard image borders
 
-    ref = np.load(fetch('test/mssim_matlab_output.npz'))
+    ref = np.load(fetch('tests/mssim_matlab_output.npz'))
     grad_matlab = ref['grad_matlab']
     mssim_matlab = float(ref['mssim_matlab'])
 
