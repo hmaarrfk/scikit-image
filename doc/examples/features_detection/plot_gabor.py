@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage as ndi
 
-from skimage import data
+from skimage.data import brick, grass, rough_wall
 from skimage.util import img_as_float
 from skimage.filters import gabor_kernel
 
@@ -54,9 +54,9 @@ for theta in range(4):
 
 
 shrink = (slice(0, None, 3), slice(0, None, 3))
-brick = img_as_float(data.load('brick.png'))[shrink]
-grass = img_as_float(data.load('grass.png'))[shrink]
-wall = img_as_float(data.load('rough-wall.png'))[shrink]
+brick = brick()[shrink]
+grass = grass()[shrink]
+wall = rough_wall()[shrink]
 image_names = ('brick', 'grass', 'wall')
 images = (brick, grass, wall)
 

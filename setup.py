@@ -159,6 +159,7 @@ def configuration(parent_package='', top_path=None):
     return config
 
 
+exclude_tests = ["*.tests", "*.tests.*", "tests.*", "tests"]
 if __name__ == "__main__":
     try:
         from numpy.distutils.core import setup
@@ -229,7 +230,8 @@ if __name__ == "__main__":
         requires=REQUIRES,
         extras_require=extras_require,
         python_requires='>=3.5',
-        packages=setuptools.find_packages(exclude=['doc', 'benchmarks']),
+        packages=setuptools.find_packages(include='skimage',
+                                          exclude=['doc', 'benchmarks'] + exclude_tests),
         include_package_data=True,
         zip_safe=False,  # the package can run out of an .egg file
 

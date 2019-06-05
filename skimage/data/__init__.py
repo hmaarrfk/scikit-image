@@ -17,7 +17,6 @@ from ..io import imread, use_plugin
 from .._shared._warnings import expected_warnings, warn
 from ..util.dtype import img_as_bool
 from ._binary_blobs import binary_blobs
-from ._detect import lbp_frontal_face_cascade_filename
 
 from .. import __version__
 
@@ -73,6 +72,7 @@ image_fetcher = pooch.create(
     # to generate the sha256 hash
     registry={
         "astronaut.png" : "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+        "brick.png": "71f1912c840a4fb1576e2b7a1c44c542dadcd9c87dff1bbd342c3fa373dee0ba",
         "camera.png": "361a6d56d22ee52289cd308d5461d090e06a56cb36007d8dfc3226cbe8aaa5db",
         "cells_qpi.npz": "a9c5212894bd4de8fddebd679500aff67f04b4e25e41c3f347f3e876ce648252",
         "chessboard_GRAY.png": "3e51870774515af4d07d820bd8827364c70839bf9b573c746e485095e893df90",
@@ -82,6 +82,7 @@ image_fetcher = pooch.create(
         "coins.png": "f8d773fc9cfa6f4d8e5942dc34d0a0788fcaed2a4fefbbed0aef5398d7ef4cba",
         "color.png": "7d2df993de2b4fa2a78e04e5df8050f49a9c511aa75e59ab3bd56ac9c98aef7e",
         "horse.png": "c7fb60789fe394c485f842291ea3b21e50d140f39d6dcb5fb9917cc178225455",
+        "grass.png": "ced49494bf777157e75a733d978dd3e54a01251687828eefced312ca7f62ad8e",
         "hubble_deep_field.jpg": "3a19c5dd8a927a9334bb1229a6d63711b1c0c767fb27e2286e7c84a3e2c2f5f4",
         "ihc.png": "f8dd1aa387ddd1f49d8ad13b50921b237df8e9b262606d258770687b0ef93cef",
         "logo.png": "f2c57fe8af089f08b5ba523d95573c26e62904ac5967f4c8851b27d033690168",
@@ -95,11 +96,12 @@ image_fetcher = pooch.create(
         "phantom.png": "552ff698167aa402cceb17981130607a228a0a0aa7c519299eaa4d5f301ba36c",
         "retina.jpg": "38a07f36f27f095e818aea7b96d34202c05176d30253c66733f2e00379e9e0e6",
         "rocket.jpg": "c2dd0de7c538df8d111e479619b129464d0269d0ae5fd18ca91d33a7fdfea95c",
+        "rough-wall.png": "59c641fabbb70ba50b47660ce385fffb2da2a7f0b9e5e4184e882c3094bb4207",
         "text.png": "bd84aa3a6e3c9887850d45d606c96b2e59433fbef50338570b63c319e668e6d1",
         "tests/chessboard_GRAY_U16.tif": "9fd3392c5b6cbc5f686d8ff83eb57ef91d038ee0852ac26817e5ac99df4c7f45",
         "tests/chessboard_GRAY_U16B.tif": "b0a9270751f0fc340c90b8b615b62b88187b9ab5995942717566735d523cddb2",
         "tests/chessboard_GRAY_U8.npy": "71f394694b721e8a33760a355b3666c9b7d7fc1188ff96b3cd23c2a1d73a38d8",
-        "tests/lbpcascade_frontalface_opencv.xml": "8cd81c5fccdbcca6b623a5f157e71b27e91907e667626a0e07da279745e12d19",
+        "lbpcascade_frontalface_opencv.xml": "8cd81c5fccdbcca6b623a5f157e71b27e91907e667626a0e07da279745e12d19",
         "tests/astronaut_GRAY_hog_L1.npy": "5d8ab22b166d1dd49c12caeff9d178ed28132efea3852b952e9d75f7f7f94954",
         "tests/astronaut_GRAY_hog_L2-Hys.npy": "c4dd6e50d1129aada358311cf8880ce8c775f31e0e550fc322c16e43a96d56fe",
         "tests/rank_filter_tests.npz": "efaf5699630f4a53255e91681dc72a965acd4a8aa1f84671c686fb93e7df046d",
@@ -205,6 +207,21 @@ def quantitative_phase_cells():
     data = _np.load(filename)
     return np.asarray(data['arr_0'], dtype=np.float)
 
+
+def lbp_frontal_face_cascade_filename():
+    """
+    Returns the path to the XML file containing information about the weak
+    classifiers of a cascade classifier trained using LBP features. It is part
+    of the OpenCV repository [1]_.
+
+    References
+    ----------
+    .. [1] OpenCV lbpcascade trained files
+           https://github.com/Itseez/opencv/tree/master/data/lbpcascades
+    """
+
+    return fetch('lbpcascade_frontalface_opencv.xml')
+
 def camera():
     """Gray-level "camera" image.
 
@@ -217,6 +234,15 @@ def camera():
     """
     return load("camera.png")
 
+
+def brick():
+    return load("brick.png")
+
+def grass():
+    return load("grass.png")
+
+def rough_wall():
+    return load("rough-wall.png")
 
 def astronaut():
     """Color image of the astronaut Eileen Collins.

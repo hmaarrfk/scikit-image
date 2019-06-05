@@ -62,19 +62,19 @@ using `OpenCV train cascade utility
 <https://docs.opencv.org/doc/user_guide/ug_traincascade.html>`_.
 """
 
-from skimage import data
+from skimage.data import lbp_frontal_face_cascade_filename, astronaut
 from skimage.feature import Cascade
 
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
 # Load the trained file from the module root.
-trained_file = data.lbp_frontal_face_cascade_filename()
+trained_file = lbp_frontal_face_cascade_filename()
 
 # Initialize the detector cascade.
 detector = Cascade(trained_file)
 
-img = data.astronaut()
+img = astronaut()
 
 detected = detector.detect_multi_scale(img=img,
                                        scale_factor=1.2,
