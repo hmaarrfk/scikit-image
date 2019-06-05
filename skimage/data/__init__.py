@@ -25,6 +25,7 @@ data_dir = osp.abspath(osp.dirname(__file__))
 
 __all__ = ['data_dir',
            'load',
+           'prefecth',
            'astronaut',
            'binary_blobs',
            'camera',
@@ -41,7 +42,6 @@ __all__ = ['data_dir',
            'microaneurysms',
            'moon',
            'page',
-           'prefetch',
            'quantitative_phase_cells',
            'text',
            'retina',
@@ -139,14 +139,14 @@ image_fetcher = pooch.create(
 fetch = image_fetcher.fetch
 
 
-def prefetch():
-    """Prefect all datasets from the internet to the local cache.
+def download_all():
+    """Download all datasets for use with scikit-image offline.
 
     Scikit-image datasets are no longer shipped with the library by default.
     This allows us to use higher quality datasets, while keeping the
     library download size small.
 
-    Call this function to prefetch the all sample images making them available
+    Call this function to download all sample images making them available
     offline on your machine.
     """
     for filename in image_fetcher.registry:
