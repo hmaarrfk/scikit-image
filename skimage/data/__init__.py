@@ -21,7 +21,6 @@ from ._binary_blobs import binary_blobs
 from .. import __version__
 
 import os.path as osp
-data_dir = osp.abspath(osp.dirname(__file__))
 
 __all__ = ['data_dir',
            'load',
@@ -66,7 +65,7 @@ image_fetcher = pooch.create(
     path=pooch.os_cache("scikit-image"),
     base_url=base_url,
     version=version,
-    env="SCIKIT_IMAGE_DATA_DIR",
+    env="SKIMAGE_DATADIR",
     # Use the command
     # openssl sha256 filename
     # to generate the sha256 hash
@@ -137,6 +136,8 @@ image_fetcher = pooch.create(
 )
 
 fetch = image_fetcher.fetch
+
+data_dir = osp.abspath(osp.dirname(__file__))
 
 
 def download_all():
