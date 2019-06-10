@@ -7,7 +7,7 @@ from skimage.feature import Cascade
 def test_detector_astronaut():
 
     # Load the trained file from the module root.
-    trained_file = data.fetch("tests/lbpcascade_frontalface_opencv.xml")
+    trained_file = data.fetch("lbpcascade_frontalface_opencv.xml")
 
     # Initialize the detector cascade.
     detector = Cascade(trained_file)
