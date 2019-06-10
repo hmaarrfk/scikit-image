@@ -62,6 +62,11 @@ else:
 
 # Create a new friend to manage your sample data storage
 image_fetcher = pooch.create(
+    # Pooch uses appdirs to select an appropriate directory for the cache on
+    # each platform.
+    # https://github.com/ActiveState/appdirs
+    # On linux this converges to
+    # PosixPath('/home/mark2/.cache/scikit-image')
     path=pooch.os_cache("scikit-image"),
     base_url=base_url,
     version=version,
@@ -137,10 +142,10 @@ image_fetcher = pooch.create(
 
 fetch = image_fetcher.fetch
 
-data_dir = osp.abspath(osp.dirname(__file__))
+data_dir = image_fetcher.abspath
 
 
-def download_all():
+def download_all(directory=None):
     """Download all datasets for use with scikit-image offline.
 
     Scikit-image datasets are no longer shipped with the library by default.
@@ -150,8 +155,17 @@ def download_all():
     Call this function to download all sample images making them available
     offline on your machine.
     """
-    for filename in image_fetcher.registry:
-        fetch(filename)
+
+    # Consider moving this kind of logic to Pooch
+    old_dir = image_fetcher.path
+    if directory is not None:
+        image_fetcher.path = directory
+
+    try:
+        for filename in image_fetcher.registry:
+            fetch(filename)
+    finally:
+        image_fetcher.path = old_dir
 
 
 def load(f, as_gray=False):
