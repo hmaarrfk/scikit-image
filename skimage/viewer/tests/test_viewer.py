@@ -70,8 +70,7 @@ def test_viewer_with_overlay():
     ov.color = 3
     assert_equal(ov.color, 'yellow')
 
-    with expected_warnings(['precision loss']):
-        viewer.save_to_file(filename)
+    viewer.save_to_file(filename)
     ov.display_filtered_image(img)
     assert_equal(ov.overlay, img)
     ov.overlay = None
