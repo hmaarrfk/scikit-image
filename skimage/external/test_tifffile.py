@@ -1,4 +1,3 @@
-import os
 import itertools
 from tempfile import NamedTemporaryFile
 from .tifffile import imread, imsave
@@ -6,6 +5,7 @@ from .tifffile import imread, imsave
 import numpy as np
 try:
     import skimage as si
+    from skimage.data import fetch
 except Exception:
     si = None
 from skimage._shared import testing
@@ -18,16 +18,16 @@ np.random.seed(0)
 
 @testing.skipif(si is None, reason="skimage not installed")
 def test_imread_uint16():
-    expected = np.load(os.path.join(si.data_dir, 'chessboard_GRAY_U8.npy'))
-    img = imread(os.path.join(si.data_dir, 'chessboard_GRAY_U16.tif'))
+    expected = np.load(fetch('data/chessboard_GRAY_U8.npy'))
+    img = imread(fetch('data/chessboard_GRAY_U16.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 
 
 @testing.skipif(si is None, reason="skimage not installed")
 def test_imread_uint16_big_endian():
-    expected = np.load(os.path.join(si.data_dir, 'chessboard_GRAY_U8.npy'))
-    img = imread(os.path.join(si.data_dir, 'chessboard_GRAY_U16B.tif'))
+    expected = np.load(fetch('data/chessboard_GRAY_U8.npy'))
+    img = imread(fetch('data/chessboard_GRAY_U16B.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 
