@@ -11,8 +11,7 @@ from skimage.morphology import grey, disk
 from skimage.filters import rank
 from skimage.filters.rank import __all__ as all_rank_filters
 from skimage._shared._warnings import expected_warnings
-from skimage._shared.testing import test_parallel, arch32, parametrize, xfail
-from pytest import param
+from skimage._shared.testing import test_parallel, parametrize
 
 
 def test_otsu_edge_case():
