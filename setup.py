@@ -154,7 +154,6 @@ def configuration(parent_package='', top_path=None):
         quiet=True)
 
     config.add_subpackage('skimage')
-    config.add_data_dir('skimage/data')
 
     return config
 
@@ -230,7 +229,6 @@ if __name__ == "__main__":
         extras_require=extras_require,
         python_requires='>=3.5',
         packages=setuptools.find_packages(exclude=['doc', 'benchmarks']),
-        include_package_data=True,
         zip_safe=False,  # the package can run out of an .egg file
 
         entry_points={
