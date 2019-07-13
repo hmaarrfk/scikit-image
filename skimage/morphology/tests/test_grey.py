@@ -1,9 +1,6 @@
-import os
-
 import numpy as np
 from scipy import ndimage as ndi
 
-from skimage import data_dir
 from skimage import color, data, transform
 from skimage.util import img_as_uint, img_as_ubyte
 from skimage.morphology import grey, selem
@@ -43,8 +40,7 @@ class TestMorphology(TestCase):
         return output
 
     def test_gray_morphology(self):
-        expected = dict(np.load(
-            os.path.join(data_dir, 'gray_morph_output.npz')))
+        expected = dict(np.load(data.fetch('data/gray_morph_output.npz')))
         calculated = self._build_expected_output()
         assert_equal(expected, calculated)
 
