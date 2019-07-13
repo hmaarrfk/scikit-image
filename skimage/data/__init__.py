@@ -15,7 +15,6 @@ from ..io import imread
 from .._shared._warnings import warn
 from ..util.dtype import img_as_bool
 from ._binary_blobs import binary_blobs
-from ._detect import lbp_frontal_face_cascade_filename
 
 from .. import __version__
 

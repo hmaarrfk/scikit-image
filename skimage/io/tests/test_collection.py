@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from skimage import data_dir
+from skimage import data
 from skimage.io.collection import ImageCollection, alphanumeric_key
 from skimage.io import reset_plugins
 
@@ -26,14 +26,19 @@ def test_string_sort():
 
 class TestImageCollection(TestCase):
 
-    pattern = [os.path.join(data_dir, pic)
-               for pic in ['camera.png', 'color.png']]
-
-    pattern_matched = [os.path.join(data_dir, pic)
-                       for pic in ['camera.png', 'moon.png']]
-
     def setUp(self):
         reset_plugins()
+        data.fetch('data/color.png')
+        data.fetch('data/camera.png')
+
+        self.pattern = [
+            os.path.join(os.path.join(data.data_dir, 'data'), pic)
+            for pic in ['camera.png', 'color.png']]
+
+        self.pattern_matched = [
+            os.path.join(os.path.join(data.data_dir, 'data'), pic)
+            for pic in ['camera.png', 'moon.png']]
+
         # Generic image collection with images of different shapes.
         self.images = ImageCollection(self.pattern)
         # Image collection with images having shapes that match.

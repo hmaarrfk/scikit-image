@@ -4,11 +4,9 @@ Tests for Morphological structuring elements
 
 Author: Damian Eads
 """
-import os.path
-
 import numpy as np
 
-from skimage import data_dir
+from skimage import data
 from skimage.morphology import selem
 
 from skimage._shared.testing import assert_equal
@@ -39,7 +37,7 @@ class TestSElem():
             assert_equal(expected_mask, actual_mask)
 
     def strel_worker(self, fn, func):
-        matlab_masks = np.load(os.path.join(data_dir, fn))
+        matlab_masks = np.load(data.fetch(fn))
         k = 0
         for arrname in sorted(matlab_masks):
             expected_mask = matlab_masks[arrname]
@@ -50,7 +48,7 @@ class TestSElem():
             k = k + 1
 
     def strel_worker_3d(self, fn, func):
-        matlab_masks = np.load(os.path.join(data_dir, fn))
+        matlab_masks = np.load(data.fetch(fn))
         k = 0
         for arrname in sorted(matlab_masks):
             expected_mask = matlab_masks[arrname]
@@ -68,19 +66,19 @@ class TestSElem():
 
     def test_selem_disk(self):
         """Test disk structuring elements"""
-        self.strel_worker("disk-matlab-output.npz", selem.disk)
+        self.strel_worker("data/disk-matlab-output.npz", selem.disk)
 
     def test_selem_diamond(self):
         """Test diamond structuring elements"""
-        self.strel_worker("diamond-matlab-output.npz", selem.diamond)
+        self.strel_worker("data/diamond-matlab-output.npz", selem.diamond)
 
     def test_selem_ball(self):
         """Test ball structuring elements"""
-        self.strel_worker_3d("disk-matlab-output.npz", selem.ball)
+        self.strel_worker_3d("data/disk-matlab-output.npz", selem.ball)
 
     def test_selem_octahedron(self):
         """Test octahedron structuring elements"""
-        self.strel_worker_3d("diamond-matlab-output.npz", selem.octahedron)
+        self.strel_worker_3d("data/diamond-matlab-output.npz", selem.octahedron)
 
     def test_selem_octagon(self):
         """Test octagon structuring elements"""

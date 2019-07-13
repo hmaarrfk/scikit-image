@@ -8,8 +8,6 @@ Authors
 :license: modified BSD
 """
 
-import os.path
-
 import numpy as np
 from skimage._shared.testing import assert_equal, assert_almost_equal
 from skimage._shared.testing import assert_array_almost_equal
@@ -297,8 +295,7 @@ class TestColorconv(TestCase):
                                           self.xyz_array, decimal=3)
         for I in ["a", "e"]:
             fname = "lab_array_{0}_2.npy".format(I, obs)
-            lab_array_I_obs = np.load(
-                os.path.join(os.path.dirname(__file__), 'data', fname))
+            lab_array_I_obs = np.load(data.fetch('color/tests/data/' + fname))
             assert_array_almost_equal(lab2xyz(lab_array_I_obs, I, "2"),
                                       self.xyz_array, decimal=3)
 

@@ -1,8 +1,7 @@
-import os
 import itertools
 from tempfile import NamedTemporaryFile
-from ... import data_dir
-from .. import imread, imsave, use_plugin, reset_plugins
+from skimage import data
+from skimage.io import imread, imsave, use_plugin, reset_plugins
 import numpy as np
 
 from skimage._shared.testing import (assert_array_equal,
@@ -20,32 +19,32 @@ def teardown():
 
 
 def test_imread_uint16():
-    expected = np.load(os.path.join(data_dir, 'chessboard_GRAY_U8.npy'))
-    img = imread(os.path.join(data_dir, 'chessboard_GRAY_U16.tif'))
+    expected = np.load(data.fetch('data/chessboard_GRAY_U8.npy'))
+    img = imread(data.fetch('data/chessboard_GRAY_U16.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 
 
 def test_imread_uint16_big_endian():
-    expected = np.load(os.path.join(data_dir, 'chessboard_GRAY_U8.npy'))
-    img = imread(os.path.join(data_dir, 'chessboard_GRAY_U16B.tif'))
+    expected = np.load(data.fetch('data/chessboard_GRAY_U8.npy'))
+    img = imread(data.fetch('data/chessboard_GRAY_U16B.tif'))
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
 
 
 def test_imread_multipage_rgb_tif():
-    img = imread(os.path.join(data_dir, 'multipage_rgb.tif'))
+    img = imread(data.fetch('data/multipage_rgb.tif'))
     assert img.shape == (2, 10, 10, 3), img.shape
 
 def test_tifffile_kwarg_passthrough ():
-    img = imread(os.path.join(data_dir, 'multipage.tif'), key=[1],
-                 multifile=False, multifile_close=True, fastij=True, 
+    img = imread(data.fetch('data/multipage.tif'), key=[1],
+                 multifile=False, multifile_close=True, fastij=True,
                  is_ome=True)
     assert img.shape == (15, 10), img.shape
 
 def test_imread_handle():
-    expected = np.load(os.path.join(data_dir, 'chessboard_GRAY_U8.npy'))
-    with open(os.path.join(data_dir, 'chessboard_GRAY_U16.tif'), 'rb') as fh:
+    expected = np.load(data.fetch('data/chessboard_GRAY_U8.npy'))
+    with open(data.fetch('data/chessboard_GRAY_U16.tif'), 'rb') as fh:
         img = imread(fh)
     assert img.dtype == np.uint16
     assert_array_almost_equal(img, expected)
