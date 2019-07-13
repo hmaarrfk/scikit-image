@@ -1,10 +1,8 @@
-import os
 import numpy as np
 from skimage._shared.testing import (assert_equal, assert_array_equal,
                                      assert_allclose)
 from skimage._shared import testing
 
-import skimage
 from skimage.util import img_as_ubyte, img_as_float
 from skimage import data, util, morphology
 from skimage.morphology import grey, disk
@@ -50,8 +48,7 @@ class TestRank():
         # Set again the seed for the other tests.
         np.random.seed(0)
         self.selem = morphology.disk(1)
-        self.refs = np.load(os.path.join(skimage.data_dir,
-                                         "rank_filter_tests.npz"))
+        self.refs = np.load(data.fetch("data/rank_filter_tests.npz"))
 
     @parametrize('filter', all_rank_filters)
     def test_rank_filter(self, filter):
