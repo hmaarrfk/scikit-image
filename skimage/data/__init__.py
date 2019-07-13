@@ -7,8 +7,7 @@ For more images, see
 """
 
 import os as _os
-
-import numpy as _np
+import numpy as np
 
 from ..io import imread
 from .._shared._warnings import expected_warnings, warn
@@ -662,7 +661,7 @@ def stereo_motorcycle():
     """
     return (load("motorcycle_left.png"),
             load("motorcycle_right.png"),
-            _np.load(_os.path.join(data_dir, "motorcycle_disp.npz"))["arr_0"])
+            np.load(_os.path.join(data_dir, "motorcycle_disp.npz"))["arr_0"])
 
 
 def lfw_subset():
@@ -694,4 +693,4 @@ def lfw_subset():
     .. [2] http://vis-www.cs.umass.edu/lfw/
 
     """
-    return _np.load(_os.path.join(data_dir, 'lfw_subset.npy'))
+    return np.load(_os.path.join(data_dir, 'lfw_subset.npy'))
