@@ -123,12 +123,15 @@ with open('skimage/__init__.py') as fid:
 
 def parse_requirements_file(filename):
     with open(filename) as fid:
-        requires = [l.strip() for l in fid.readlines() if l]
+        requires = [l.strip()
+                    for l in fid.readlines()
+                    if l and not l.startswith('-r')]
 
     return requires
 
 
 INSTALL_REQUIRES = parse_requirements_file('requirements/default.txt')
+INSTALL_REQUIRES += parse_requirements_file('requirements/numpy.txt')
 # The `requirements/extras.txt` file is explicitely omitted because
 # it contains requirements that do not have wheels uploaded to pip
 # for the platforms we wish to support.

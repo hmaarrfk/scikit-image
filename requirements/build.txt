@@ -1,3 +1,2 @@
-Cython>=0.25,!=0.28.2,!=0.29.0
-wheel
-numpy>=1.13.3
+-r cython.txt
+-r numpy.txt
