@@ -43,7 +43,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux1
           CIBW_MANYLINUX_I686_IMAGE: manylinux1
           CIBW_TEST_REQUIRES: pytest pooch pytest-localserver pytest-faulthandler
-          CIBW_TEST_COMMAND: pytest --pyargs skimage
+          CIBW_TEST_COMMAND: pytest -vv --pyargs skimage
       - uses: actions/upload-artifact@v2
         with:
           name: wheels
